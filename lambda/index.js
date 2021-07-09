@@ -28,7 +28,7 @@ async function manager(endpoint, params, body) {
         case '/db-connections/updateViewedWords':
             let idString = '';
             if (!body) {
-                return {};
+                break;
             }
             const { keys } = JSON.parse(body);
 
@@ -45,7 +45,7 @@ async function manager(endpoint, params, body) {
 
         case '/db-connections/addWord':
             if (!body) {
-                return {};
+                break;
             }
             const { word, meaning } = JSON.parse(body);
             const result = await pool.query(`insert into words ("key", meaning, created_ts, "owner", frequency) values ($1, $2, now(), $3, 1) returning *`, [word, meaning, ownerId]);
@@ -54,6 +54,8 @@ async function manager(endpoint, params, body) {
         default:
             break;
     }
+
+    pool.end();
     return response;
 
 }
