@@ -7,6 +7,7 @@ import {
   updateTableData,
   updateViewdWords,
 } from '../actions/tableData';
+import { formatText } from '../actions/util'
 import { ClipLoader } from 'react-spinners'
 import '../App.css';
 
@@ -37,12 +38,15 @@ function App() {
     }
 
     try {
+
+      const newWord = { word: formatText(word), meaning: formatText(meaning) };
+
       // add new word to the table
-      const wordId = await updateTableData({ word, meaning });
+      const wordId = await updateTableData(newWord);
 
       // update react states
       setTableData([
-        { word, meaning, key: wordId },
+        { ...newWord, key: wordId },
         ...tableData
       ]);
       setExposed([...exposed, `${wordId}`]);
