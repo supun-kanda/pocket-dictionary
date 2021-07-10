@@ -330,6 +330,7 @@ function App() {
               onSuccess={onLoginSuccess}
               onFailure={e => onResponseNotOk(new ResponseError(400, null, e.error))}
               cookiePolicy={'single_host_origin'}
+              // uxMode="redirect"
             />
           </div>
         )}

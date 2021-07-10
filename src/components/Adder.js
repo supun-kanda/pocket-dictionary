@@ -50,6 +50,12 @@ export default function Adder({
 }) {
     const classes = useStyles();
 
+    const onKeyPress = e => {
+        if (e.charCode === 13) {
+            onAdd();
+        }
+    }
+
     return (
         <Box className={classes.box}>
             <TextField
@@ -74,6 +80,7 @@ export default function Adder({
                 className={classes.element}
                 onChange={e => setMeaning(e.target.value)}
                 value={meaning}
+                onKeyPress={onKeyPress}
             />
             <Button
                 variant="contained"
@@ -94,5 +101,5 @@ Adder.propTypes = {
     setWord: PropTypes.func,
     setMeaning: PropTypes.func,
     setValidity: PropTypes.func,
-    
+
 }

@@ -1,7 +1,6 @@
 {
   "name": "my-pocket-dict",
   "version": "0.1.0",
-  "proxy": "https://aicj966nz7.execute-api.us-east-1.amazonaws.com",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.12.1",
