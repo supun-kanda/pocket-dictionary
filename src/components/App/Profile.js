@@ -104,12 +104,10 @@ const StyledMenuItem = withStyles((theme) => ({
     },
 }))(MenuItem);
 
-Profile.propTypes = PropTypes.shape({
-    userData: {
-        name: PropTypes.string,
-    },
+Profile.propTypes = {
+    userData: PropTypes.object,
     deleteAccount: PropTypes.func,
     logOut: PropTypes.func,
     isOpen: PropTypes.bool,
     setOpen: PropTypes.func,
-});
+};

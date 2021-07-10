@@ -95,8 +95,8 @@ export default function Login({
     );
 }
 
-Login.propTypes = PropTypes.shape({
+Login.propTypes = {
     setInfo: PropTypes.func,
     setUserData: PropTypes.func,
     getGoogleLogin: PropTypes.func,
-});
+};

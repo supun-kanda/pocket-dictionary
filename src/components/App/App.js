@@ -288,16 +288,16 @@ export default function App({
   );
 }
 
-App.propTypes = PropTypes.shape({
-  info: PropTypes.string,
+App.propTypes = {
+  info: PropTypes.object,
   setInfo: PropTypes.func,
-  isTableLoading: PropTypes.string,
+  isTableLoading: PropTypes.bool,
   setTableLoading: PropTypes.func,
-  isLoginModalOpen: PropTypes.string,
+  isLoginModalOpen: PropTypes.bool,
   setLoginModalOpen: PropTypes.func,
-  userData: PropTypes.string,
+  userData: PropTypes.object,
   setUserData: PropTypes.func,
-  shouldClear: PropTypes.string,
+  shouldClear: PropTypes.bool,
   setShouldClear: PropTypes.func,
   onResponseNotOk: PropTypes.func,
-});
+};
