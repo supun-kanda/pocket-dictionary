@@ -15,8 +15,6 @@ import FirstPageIcon from '@material-ui/icons/FirstPage';
 import KeyboardArrowLeft from '@material-ui/icons/KeyboardArrowLeft';
 import KeyboardArrowRight from '@material-ui/icons/KeyboardArrowRight';
 import LastPageIcon from '@material-ui/icons/LastPage';
-import { updateViewdWords } from '../actions/tableData'
-import _ from 'lodash';
 
 const useStyles1 = makeStyles((theme) => ({
     root: {
@@ -103,6 +101,7 @@ export default function CustomPaginationActionsTable({
     setViewingData,
     viewingData,
     setViewEnabled,
+    updateViewdWords,
 }) {
     const classes = useStyles2();
 
@@ -131,7 +130,7 @@ export default function CustomPaginationActionsTable({
     useEffect(() => {
         const filteredData = rowsPerPage > 0 ? data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage) : data;
 
-        setViewingData(_.uniqBy(filteredData, e => e.key))
+        setViewingData(filteredData);
         setViewEnabled(true);
     }, [page, rowsPerPage, data, setViewingData, setViewEnabled])
 
@@ -213,4 +212,5 @@ CustomPaginationActionsTable.propTypes = {
     setViewingData: PropTypes.func,
     viewingData: PropTypes.array,
     setViewEnabled: PropTypes.func,
+    updateViewdWords: PropTypes.func,
 };

@@ -12,9 +12,7 @@ function format(rows) {
 
 }
 
-async function manager(endpoint, params, body) {
-    const pool = new Pool();
-    const { ownerId } = params || {};
+async function manager(pool, endpoint, ownerId, body, qp) {
     let response = {};
     const validEndpoint = endpoint ? endpoint.trim() : null;
 
@@ -51,6 +49,19 @@ async function manager(endpoint, params, body) {
             const result = await pool.query(`insert into words ("key", meaning, created_ts, "owner", frequency) values ($1, $2, now(), $3, 1) returning *`, [word, meaning, ownerId]);
             response = { key: result.rows[0].id };
             break;
+        case '/db-connections/deleteUser':
+            const { email } = qp;
+            const { rows: delRows } = await pool.query(`select id from "user" where email = $1`, [email.toLowerCase()]);
+
+            if (!Array.isArray(delRows) || delRows.length !== 1 || delRows[0].id !== ownerId) {
+                return { message: 'Forbidden request' };
+            }
+
+            // validated request, hence deleting
+            await pool.query(`delete from words where "owner" = $1`, [ownerId]);
+            await pool.query(`delete from "user" where id = $1`, [ownerId]);
+
+            break;
         default:
             break;
     }
@@ -61,11 +72,41 @@ async function manager(endpoint, params, body) {
 }
 
 exports.handler = async (event) => {
+    const pool = new Pool();
+
     const {
-        queryStringParameters,
         body,
+        requestContext: { authorizer: { email, name } },
+        queryStringParameters: qp,
+
     } = event;
-    const output = await manager(event.path, queryStringParameters, body)
+
+    if (!email) {
+        return {
+            statusCode: 404,
+            body: JSON.stringify({ message: "no email decoded" }),
+        };
+    }
+    const { rows } = await pool.query(`select id from "user" where email = $1`, [email.toLowerCase()]);
+
+    let userId;
+    if (Array.isArray(rows) && rows.length == 1) {
+        // if record exists, then assign
+        userId = rows[0].id;
+    } else if (Array.isArray(rows) && rows.length > 1) {
+        // there can't be multiple user records to a single email
+        return {
+            statusCode: 500,
+            body: JSON.stringify({ message: `multiple rows:${rows} found for email:${email}` }),
+        };
+    } else {
+        // create a user record
+        const { rows: newRows } = await pool.query('insert into "user" (email, "name", created_ts) values ($1, $2, now()) returning *', [email.toLowerCase(), name]);
+        userId = newRows[0].id;
+    }
+
+
+    const output = await manager(pool, event.path, userId, body, qp);
     return {
         statusCode: 200,
         body: JSON.stringify(output),
