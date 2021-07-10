@@ -14,9 +14,14 @@ export function getUserData() {
 }
 
 export function setUserData(data) {
-    const sessionData = JSON.stringify(data);
+    if (!data) {
+        localStorage.clear();
+        return false;
+    }
 
+    const sessionData = JSON.stringify(data);
     const encodedData = btoa(sessionData);
+
     localStorage.setItem('session', encodedData);
     return true;
 }
@@ -33,3 +38,9 @@ export const getAuthTokenFormat = token => ({
         Authorization: `token ${token}`
     }
 });
+
+export const getTokenId = hash => {
+    const regex = /&id_token=.*&login_hint/g;
+    const matches = hash.match(regex);
+    return matches[0].replace('&id_token=', '').replace('&login_hint', '').trim();
+}

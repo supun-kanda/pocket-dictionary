@@ -16,11 +16,14 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 function getTitle(code) {
     let title;
     switch (code) {
-        case StatusCodes.UNAUTHORIZED:
+        case 27:
             title = 'Login';
             break;
         case 9:
             title = 'Delet Account';
+            break;
+        case 17:
+            title = 'Login Issue';
             break;
         default:
             title = 'Alert';
@@ -40,7 +43,7 @@ export default function InfoModal({
     const getModalActions = (statusCode, onClose, onDelete) => {
         let component;
         switch (statusCode) {
-            case StatusCodes.UNAUTHORIZED:
+            case 27:
                 component = null;
                 break;
             case 9:

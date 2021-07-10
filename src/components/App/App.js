@@ -1,42 +1,44 @@
 import React, { useState, useEffect } from 'react';
 
 // components
-import { ClipLoader } from 'react-spinners'
-
 import Table from './DataTable'
 import Manager from './Manager'
 import Adder from './Adder'
-import InfoModal from './InfoModal';
-import { GoogleLogin } from 'react-google-login';
-
 
 // utils
 import {
   fetchTableData,
   updateTableData,
   updateViewdWords,
-  deleteUser,
-} from '../actions/tableData';
+} from '../../actions/tableData';
+import { deleteUser } from '../../actions/user';
 import {
   formatText,
   getUserData,
   setUserData as setLocalStorage
-} from '../util/util';
-import { userInitialState, infoInitialState } from '../util/const';
+} from '../../util/util';
+import { userInitialState, infoInitialState } from '../../util/const';
 import { StatusCodes } from 'http-status-codes';
-import { GOOGLE_CLIENT_ID } from '../util/const';
-import ResponseError from '../util/ResponseError';
+import PropTypes from 'prop-types'
 
-// styles
-import '../App.css';
-
-function App() {
+export default function App({
+  info,
+  setInfo,
+  isTableLoading,
+  setTableLoading,
+  isLoginModalOpen,
+  setLoginModalOpen,
+  userData,
+  setUserData,
+  shouldClear,
+  setShouldClear,
+  onResponseNotOk,
+}) {
 
   // adder
   const [isValid, setValidity] = useState(true);
   const [word, setWord] = useState('');
   const [meaning, setMeaning] = useState('');
-  const [isTableLoading, setTableLoading] = useState(false);
 
   // table
   const [tableData, setTableData] = useState([]);
@@ -47,11 +49,6 @@ function App() {
   const [isResetEnabled, setResetEnabled] = useState(false);
   const [isViewEnabled, setViewEnabled] = useState(true);
   const [isProfileOpen, setProfileOpen] = useState(false);
-
-  // profile
-  const [isLoginModalOpen, setLoginModalOpen] = useState(false);
-  const [info, setInfo] = useState({ ...infoInitialState });
-  const [userData, setUserData] = useState({ ...userInitialState });
 
   const fetchDataForValidUser = async tokenId => {
     setTableLoading(true);
@@ -136,36 +133,6 @@ function App() {
   }
 
   /**
-   * executes when google successfully autheticates 
-   * @param {Object} data google response data
-   */
-  const onLoginSuccess = async data => {
-    try {
-      const {
-        accessToken,
-        tokenId,
-        profileObj: {
-          email,
-          name,
-        },
-      } = data;
-
-      setLocalStorage({ accessToken, email, name, tokenId });
-      setUserData({ accessToken, email, name, tokenId });
-
-      // close modal
-      setLoginModalOpen(false);
-      setInfo({ ...infoInitialState });
-
-      fetchDataForValidUser(tokenId);
-
-    } catch (error) {
-      // close modal
-      setLoginModalOpen(true);
-    }
-  }
-
-  /**
    * clear all info while login out of delete account
    */
   const clearAll = () => {
@@ -185,7 +152,7 @@ function App() {
     setInfo({
       ...infoInitialState,
       isOpen: true,
-      code: StatusCodes.UNAUTHORIZED,
+      code: 27,
     })
   }
 
@@ -226,54 +193,47 @@ function App() {
   }
 
   /**
-   * act on error
-   * @param {Error|ResponseError} error
-   * @returns is authorization error
-   */
-  const onResponseNotOk = error => {
-    const statusCode = error.code;
-    if (statusCode && statusCode === StatusCodes.UNAUTHORIZED) {
-      setLoginModalOpen(true);
-      setInfo({
-        isOpen: true,
-        alert: `${StatusCodes.UNAUTHORIZED} Unauthorized`,
-        code: StatusCodes.UNAUTHORIZED,
-      });
-      setLocalStorage('');
-      return true;
-    }
-
-    setLoginModalOpen(false);
-    setInfo({ isOpen: true, alert: error.message, code: 0 })
-    setLocalStorage('');
-    return false;
-  }
-
-  /**
-   * conponenetDidMount
+   * conponenetDidMount (all props are from parent and methods)
    */
   useEffect(() => {
     const fetchData = async () => {
+      let storageData;
+      try {
+        storageData = getUserData();
+      } catch (error) {
+        setLoginModalOpen(true);
+        setInfo({ alert: 'Please Login again', isOpen: true, code: 27 });
+        return;
+      }
+
       const {
-        accessToken,
         name,
         email,
         tokenId,
-      } = getUserData();
+        userId,
+      } = storageData;
 
       if (tokenId) {
-        setUserData({ accessToken, name, email, tokenId });
-        await fetchDataForValidUser(tokenId);
+
+        setUserData({ name, email, tokenId, userId });
+        try {
+          await fetchDataForValidUser(tokenId);
+        } catch (error) {
+          onResponseNotOk(error);
+        }
+
       } else {
+
         setLoginModalOpen(true);
-        setInfo({ alert: null, isOpen: true, code: StatusCodes.UNAUTHORIZED });
+        setInfo({ alert: null, isOpen: true, code: 27 });
+
       }
     }
     fetchData();
-  }, []);
+  }, [setInfo, setLoginModalOpen, setUserData]);
 
   /**
-   * componentDidUpdate with exposedChange
+   * componentDidUpdate with exposed change
    */
   useEffect(() => {
     if (exposed.length) {
@@ -281,8 +241,18 @@ function App() {
     }
   }, [exposed]);
 
+  /**
+   * componentDidUpdate with shoudClear change
+   */
+  useEffect(() => {
+    if (shouldClear) {
+      setShouldClear(false);
+      deleteAccount();
+    }
+  }, [shouldClear, setShouldClear]);
+
   return (
-    <div className="App">
+    <div>
       <Manager
         onViewAll={onViewAll}
         onReset={onReset}
@@ -296,9 +266,6 @@ function App() {
         isOpen={isProfileOpen}
         setOpen={setProfileOpen}
       />
-      <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
-        <ClipLoader color={'blue'} loading={isTableLoading} css={'override'} size={150} />
-      </div>
       <Table
         data={tableData}
         exposed={exposed}
@@ -317,28 +284,20 @@ function App() {
         setMeaning={setMeaning}
         setValidity={setValidity}
       />
-      <InfoModal
-        isOpen={info.isOpen}
-        showLogin={isLoginModalOpen}
-        alert={info.alert}
-        code={info.code}
-        Login={() => (
-          <div onClick={() => setInfo({ ...infoInitialState })}>
-            <GoogleLogin
-              clientId={GOOGLE_CLIENT_ID}
-              buttonText="Log in with Google"
-              onSuccess={onLoginSuccess}
-              onFailure={e => onResponseNotOk(new ResponseError(400, null, e.error))}
-              cookiePolicy={'single_host_origin'}
-              // uxMode="redirect"
-            />
-          </div>
-        )}
-        handleClose={() => setInfo({ alert: info.alert, isOpen: false, code: 0 })}
-        onDeleteAccount={deleteAccount}
-      />
     </div>
   );
 }
 
-export default App;
+App.prototype = PropTypes.shape({
+  info: PropTypes.string,
+  setInfo: PropTypes.func,
+  isTableLoading: PropTypes.string,
+  setTableLoading: PropTypes.func,
+  isLoginModalOpen: PropTypes.string,
+  setLoginModalOpen: PropTypes.func,
+  userData: PropTypes.string,
+  setUserData: PropTypes.func,
+  shouldClear: PropTypes.string,
+  setShouldClear: PropTypes.func,
+  onResponseNotOk: PropTypes.func,
+});

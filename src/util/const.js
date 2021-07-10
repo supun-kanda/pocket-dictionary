@@ -3,9 +3,9 @@ export const API_URL = 'https://aicj966nz7.execute-api.us-east-1.amazonaws.com'
 
 export const userInitialState = {
     email: null,
-    accessToken: null,
     name: null,
     tokenId: null,
+    userId: null,
 };
 
 export const infoInitialState = {

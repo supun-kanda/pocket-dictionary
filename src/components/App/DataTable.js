@@ -84,6 +84,12 @@ const useStyles2 = makeStyles({
         '&:hover': {
             background: "#2f3136",
         },
+        '-webkit-touch-callout': 'none',
+        '-webkit-user-select': 'none',
+        '-khtml-user-select': 'none',
+        '-moz-user-select': 'none',
+        '-ms-user-select': 'none',
+        'user-select': 'none',
     },
     container: {
         height: '50%'

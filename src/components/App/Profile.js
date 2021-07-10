@@ -14,6 +14,7 @@ import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 export default function Profile({
     userData: {
         name,
+        email,
     },
     deleteAccount,
     logOut,
@@ -53,7 +54,7 @@ export default function Profile({
                     <ListItemIcon>
                         <AccountCircleIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary={name || `Guest`} />
+                    <ListItemText primary={name || email || `Guest`} />
                 </StyledMenuItem>
                 <StyledMenuItem onClick={logOut}>
                     <ListItemIcon>
