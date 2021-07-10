@@ -23,7 +23,7 @@ export function setUserData(data) {
 
 export function responseAnalyzer(response) {
     if (!response.ok) {
-        throw new ResponseError(response.status, response, "Not OK");
+        throw new ResponseError(response.status, response, `Status Code Error ${response.status}`);
     }
     return response;
 }

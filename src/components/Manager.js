@@ -25,6 +25,8 @@ export default function Manager({
     userData,
     deleteAccount,
     logOut,
+    isOpen,
+    setOpen,
 }) {
     const classes = useStyles();
 
@@ -44,6 +46,8 @@ export default function Manager({
                     userData={userData}
                     logOut={logOut}
                     deleteAccount={deleteAccount}
+                    isOpen={isOpen}
+                    setOpen={setOpen}
                 />
             </Box>
         </div>
@@ -58,4 +62,6 @@ Manager.propTypes = {
     userData: PropTypes.object,
     deleteAccount: PropTypes.func,
     logOut: PropTypes.func,
+    isOpen: PropTypes.bool,
+    setOpen: PropTypes.func,
 };

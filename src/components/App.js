@@ -6,7 +6,9 @@ import { ClipLoader } from 'react-spinners'
 import Table from './DataTable'
 import Manager from './Manager'
 import Adder from './Adder'
-import LoginModal from './LoginModal';
+import InfoModal from './InfoModal';
+import { GoogleLogin } from 'react-google-login';
+
 
 // utils
 import {
@@ -20,8 +22,10 @@ import {
   getUserData,
   setUserData as setLocalStorage
 } from '../util/util';
-import { userInitialState } from '../util/const';
+import { userInitialState, infoInitialState } from '../util/const';
 import { StatusCodes } from 'http-status-codes';
+import { GOOGLE_CLIENT_ID } from '../util/const';
+import ResponseError from '../util/ResponseError';
 
 // styles
 import '../App.css';
@@ -42,26 +46,12 @@ function App() {
   // manager
   const [isResetEnabled, setResetEnabled] = useState(false);
   const [isViewEnabled, setViewEnabled] = useState(true);
+  const [isProfileOpen, setProfileOpen] = useState(false);
 
-  // login
+  // profile
   const [isLoginModalOpen, setLoginModalOpen] = useState(false);
+  const [info, setInfo] = useState({ ...infoInitialState });
   const [userData, setUserData] = useState({ ...userInitialState });
-
-  const fetchData = async () => {
-    const {
-      accessToken,
-      name,
-      email,
-      tokenId,
-    } = getUserData();
-
-    if (tokenId) {
-      setUserData({ accessToken, name, email, tokenId });
-      await fetchDataForValidUser(tokenId);
-    } else {
-      setLoginModalOpen(true);
-    }
-  }
 
   const fetchDataForValidUser = async tokenId => {
     setTableLoading(true);
@@ -115,11 +105,16 @@ function App() {
    * On view all button click
    */
   const onViewAll = () => {
+    if (!viewingData.length) {
+      return;
+    }
+
     const viewedIds = viewingData.map(e => `${e.key}`);
     const newlyExposed = viewedIds.filter(e => !exposed.includes(e));
 
+    updateViewdWords(viewedIds, userData.tokenId)
+      .catch(onResponseNotOk);
     setExposed([...exposed, ...newlyExposed]);
-    updateViewdWords(viewedIds, userData.tokenId);
     setViewEnabled(false);
   }
 
@@ -128,15 +123,16 @@ function App() {
    */
   const onReset = async () => {
     try {
+      setTableLoading(true)
       setTableData(await fetchTableData(userData.tokenId));
     } catch (error) {
       onResponseNotOk(error);
+    } finally {
+      setTableLoading(false);
+      setResetEnabled(false);
+      setExposed([]);
+      setViewEnabled(true);
     }
-    setTableLoading(true);
-    setResetEnabled(false);
-    setExposed([]);
-    setViewEnabled(true);
-    setTableLoading(false);
   }
 
   /**
@@ -153,13 +149,13 @@ function App() {
           name,
         },
       } = data;
-      console.log(data);
 
       setLocalStorage({ accessToken, email, name, tokenId });
       setUserData({ accessToken, email, name, tokenId });
 
       // close modal
       setLoginModalOpen(false);
+      setInfo({ ...infoInitialState });
 
       fetchDataForValidUser(tokenId);
 
@@ -169,8 +165,11 @@ function App() {
     }
   }
 
+  /**
+   * clear all info while login out of delete account
+   */
   const clearAll = () => {
-    setValidity(false);
+    setValidity(true);
     setWord('');
     setMeaning('');
     setTableLoading(false);
@@ -183,14 +182,29 @@ function App() {
 
     // open login modal when logout
     setLoginModalOpen(true);
+    setInfo({
+      ...infoInitialState,
+      isOpen: true,
+      code: StatusCodes.UNAUTHORIZED,
+    })
   }
 
+  /**
+   * on logout
+   */
   const logOut = () => {
+    setProfileOpen(false);
+    setTableLoading(true);
     setLocalStorage('');
     clearAll();
   }
 
+  /**
+   * on account deletion
+   */
   const deleteAccount = () => {
+    setInfo({ ...infoInitialState });
+    setTableLoading(true);
     deleteUser(userData.email, userData.tokenId)
       .then(() => {
         setLocalStorage('');
@@ -199,13 +213,39 @@ function App() {
       .catch(onResponseNotOk);
   }
 
+  /**
+   * on delete option click
+   */
+  const onDeleteAccountClick = () => {
+    setProfileOpen(false);
+    setInfo({
+      isOpen: true,
+      code: 9,
+      alert: 'Are you sure you want to delete?'
+    })
+  }
+
+  /**
+   * act on error
+   * @param {Error|ResponseError} error
+   * @returns is authorization error
+   */
   const onResponseNotOk = error => {
     const statusCode = error.code;
     if (statusCode && statusCode === StatusCodes.UNAUTHORIZED) {
       setLoginModalOpen(true);
+      setInfo({
+        isOpen: true,
+        alert: `${StatusCodes.UNAUTHORIZED} Unauthorized`,
+        code: StatusCodes.UNAUTHORIZED,
+      });
       setLocalStorage('');
       return true;
     }
+
+    setLoginModalOpen(false);
+    setInfo({ isOpen: true, alert: error.message, code: 0 })
+    setLocalStorage('');
     return false;
   }
 
@@ -213,8 +253,23 @@ function App() {
    * conponenetDidMount
    */
   useEffect(() => {
-    const asyncFunc = async () => await fetchData();
-    asyncFunc();
+    const fetchData = async () => {
+      const {
+        accessToken,
+        name,
+        email,
+        tokenId,
+      } = getUserData();
+
+      if (tokenId) {
+        setUserData({ accessToken, name, email, tokenId });
+        await fetchDataForValidUser(tokenId);
+      } else {
+        setLoginModalOpen(true);
+        setInfo({ alert: null, isOpen: true, code: StatusCodes.UNAUTHORIZED });
+      }
+    }
+    fetchData();
   }, []);
 
   /**
@@ -237,7 +292,9 @@ function App() {
           ...userData,
         }}
         logOut={logOut}
-        deleteAccount={deleteAccount}
+        deleteAccount={onDeleteAccountClick}
+        isOpen={isProfileOpen}
+        setOpen={setProfileOpen}
       />
       <div style={{ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" }}>
         <ClipLoader color={'blue'} loading={isTableLoading} css={'override'} size={150} />
@@ -260,11 +317,24 @@ function App() {
         setMeaning={setMeaning}
         setValidity={setValidity}
       />
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        setOpen={setLoginModalOpen}
-        onSuccess={onLoginSuccess}
-        onFailure={() => setLoginModalOpen(true)}
+      <InfoModal
+        isOpen={info.isOpen}
+        showLogin={isLoginModalOpen}
+        alert={info.alert}
+        code={info.code}
+        Login={() => (
+          <div onClick={() => setInfo({ ...infoInitialState })}>
+            <GoogleLogin
+              clientId={GOOGLE_CLIENT_ID}
+              buttonText="Log in with Google"
+              onSuccess={onLoginSuccess}
+              onFailure={e => onResponseNotOk(new ResponseError(400, null, e.error))}
+              cookiePolicy={'single_host_origin'}
+            />
+          </div>
+        )}
+        handleClose={() => setInfo({ alert: info.alert, isOpen: false, code: 0 })}
+        onDeleteAccount={deleteAccount}
       />
     </div>
   );

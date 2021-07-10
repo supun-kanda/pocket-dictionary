@@ -17,15 +17,19 @@ export default function Profile({
     },
     deleteAccount,
     logOut,
+    isOpen,
+    setOpen,
 }) {
     const [anchorEl, setAnchorEl] = useState(null);
 
     const handleClick = (event) => {
+        setOpen(true);
         setAnchorEl(event.currentTarget);
     };
 
     const handleClose = () => {
         setAnchorEl(null);
+        setOpen(false);
     };
 
     return (
@@ -42,7 +46,7 @@ export default function Profile({
                 id="customized-menu"
                 anchorEl={anchorEl}
                 keepMounted
-                open={Boolean(anchorEl)}
+                open={isOpen}
                 onClose={handleClose}
             >
                 <StyledMenuItem disabled>
@@ -105,4 +109,6 @@ Profile.prototype = PropTypes.shape({
     },
     deleteAccount: PropTypes.func,
     logOut: PropTypes.func,
+    isOpen: PropTypes.bool,
+    setOpen: PropTypes.func,
 });
