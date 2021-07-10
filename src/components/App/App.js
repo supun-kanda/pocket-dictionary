@@ -288,7 +288,7 @@ export default function App({
   );
 }
 
-App.prototype = PropTypes.shape({
+App.propTypes = PropTypes.shape({
   info: PropTypes.string,
   setInfo: PropTypes.func,
   isTableLoading: PropTypes.string,
