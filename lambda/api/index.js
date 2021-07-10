@@ -62,6 +62,12 @@ async function manager(pool, endpoint, ownerId, body, qp) {
             await pool.query(`delete from "user" where id = $1`, [ownerId]);
 
             break;
+        case '/db-connections/fetchUser':
+            const { rows: userRows } = await pool.query(`select id, email, "name" from "user" where id = $1`, [ownerId]);
+            if (Array.isArray(userRows) && userRows.length == 1) {
+                response = { ...userRows[0] }
+            }
+            break;
         default:
             break;
     }
@@ -101,14 +107,27 @@ exports.handler = async (event) => {
         };
     } else {
         // create a user record
-        const { rows: newRows } = await pool.query('insert into "user" (email, "name", created_ts) values ($1, $2, now()) returning *', [email.toLowerCase(), name]);
-        userId = newRows[0].id;
+        try {
+            const { rows: newRows } = await pool.query('insert into "user" (email, "name", created_ts) values ($1, $2, now()) returning *', [email.toLowerCase(), name]);
+            userId = newRows[0].id;
+        } catch (error) {
+            return {
+                statusCode: 500,
+                body: JSON.stringify(error.message),
+            };
+        }
     }
 
-
-    const output = await manager(pool, event.path, userId, body, qp);
-    return {
-        statusCode: 200,
-        body: JSON.stringify(output),
-    };
+    try {
+        const output = await manager(pool, event.path, userId, body, qp);
+        return {
+            statusCode: 200,
+            body: JSON.stringify(output),
+        };
+    } catch (error) {
+        return {
+            statusCode: 500,
+            body: JSON.stringify(error.message),
+        };
+    }
 };
