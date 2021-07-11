@@ -1,7 +1,21 @@
 import ResponseError from './ResponseError';
 
+/**
+ * Trim and capitalized first letter. eg: ' test   ' => 'Test'
+ * @param {String} string text to be formatted
+ * @returns trimmed text
+ */
 export function formatText(string) {
-    return string ? string.charAt(0).toUpperCase() + string.slice(1) : '';
+    let trimmed;
+
+    if (string) {
+        trimmed = string.replace(/\s+/g, ' ').trim();
+    } else {
+        return '';
+    }
+
+    return trimmed ? trimmed.charAt(0).toUpperCase() + trimmed.slice(1) : '';
+
 }
 
 export function getUserData() {
@@ -39,6 +53,11 @@ export const getAuthTokenFormat = token => ({
     }
 });
 
+/**
+ * Extract id token from hash param
+ * @param {String} hash eg: #scope=email%20profile%20https://www.googleapis.com/auth/userinfo.email%20https://www.googleapis.com/auth/userinfo.profile%20openid&id_token=jebberish_1&login_hint=jibberish_2&client_id=cliend_id
+ * @returns {String} id_token value eg: jebberish_1
+ */
 export const getTokenId = hash => {
     const regex = /&id_token=.*&login_hint/g;
     const matches = hash.match(regex);
