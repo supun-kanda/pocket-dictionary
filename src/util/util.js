@@ -63,3 +63,17 @@ export const getTokenId = hash => {
     const matches = hash.match(regex);
     return matches[0].replace('&id_token=', '').replace('&login_hint', '').trim();
 }
+
+/**
+ * Is word entry valid
+ * @param {String} word word key
+ * @param {String} meaning word meaning
+ * @param {Array} tableData table data
+ * @returns {Boolean} should the word allowed to be entered
+ */
+export const isValidEntry = (word, meaning, tableData = []) => {
+    if (word && meaning) {
+        return !tableData.find(e => e && e.word && e.word.toLowerCase() === word.toLowerCase());
+    }
+    return false;
+}

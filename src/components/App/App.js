@@ -15,10 +15,10 @@ import { deleteUser } from '../../actions/user';
 import {
   formatText,
   getUserData,
-  setUserData as setLocalStorage
+  setUserData as setLocalStorage,
+  isValidEntry,
 } from '../../util/util';
 import { userInitialState, infoInitialState } from '../../util/const';
-import { StatusCodes } from 'http-status-codes';
 import PropTypes from 'prop-types'
 
 export default function App({
@@ -67,7 +67,7 @@ export default function App({
   const onAdd = async () => {
     setTableLoading(true);
 
-    if (!word || !meaning || tableData.find(e => e.word === word)) {
+    if (!isValidEntry(word, meaning, tableData)) {
       setValidity(false);
       return setTableLoading(false);
     }
