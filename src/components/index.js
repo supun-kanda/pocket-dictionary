@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+// styles
+import '../Main.css';
+
 // components
 import InfoModal from './InfoModal';
 import { GoogleLogin } from 'react-google-login';
@@ -17,9 +20,6 @@ import { userInitialState, infoInitialState } from '../util/const';
 import { StatusCodes } from 'http-status-codes';
 
 const { GOOGLE_CLIENT_ID } = process.env;
-
-// styles
-import '../Main.css';
 
 function Main() {
 
