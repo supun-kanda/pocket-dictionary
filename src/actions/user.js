@@ -3,10 +3,8 @@ import {
     getAuthTokenFormat,
 } from '../util/util';
 
-import { API_URL } from '../util/const';
-
 export const getUserInfo = tokenId => {
-    return fetch(`${API_URL}/db-connections/fetchUser`, {
+    return fetch(`/api/db-connections/fetchUser`, {
         method: 'GET',
         ...getAuthTokenFormat(tokenId),
     })
@@ -15,7 +13,7 @@ export const getUserInfo = tokenId => {
 }
 
 export const deleteUser = (email, tokenId) => {
-    return fetch(`${API_URL}/db-connections/deleteUser?email=${email}`, {
+    return fetch(`/api/db-connections/deleteUser?email=${email}`, {
         method: 'DELETE',
         ...getAuthTokenFormat(tokenId),
     })
