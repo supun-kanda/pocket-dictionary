@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 
 // components
-import Table from './DataTable'
-import Manager from './Manager'
-import Adder from './Adder'
+import Table from './DataTable';
+// import Manager from './Manager';
+import AppBar from './AppBar';
 
 // utils
 import {
@@ -19,7 +19,7 @@ import {
   isValidEntry,
 } from '../../util/util';
 import { userInitialState, infoInitialState } from '../../util/const';
-import PropTypes from 'prop-types'
+import PropTypes from 'prop-types';
 
 export default function App({
   info,
@@ -253,11 +253,9 @@ export default function App({
 
   return (
     <div>
-      <Manager
-        onViewAll={onViewAll}
+      <AppBar
         onReset={onReset}
         isResetEnabled={isResetEnabled}
-        isViewEnabled={isViewEnabled}
         userData={{
           ...userData,
         }}
@@ -265,6 +263,13 @@ export default function App({
         deleteAccount={onDeleteAccountClick}
         isOpen={isProfileOpen}
         setOpen={setProfileOpen}
+        isValid={isValid}
+        word={word}
+        meaning={meaning}
+        onAdd={onAdd}
+        setWord={setWord}
+        setMeaning={setMeaning}
+        setValidity={setValidity}
       />
       <Table
         data={tableData}
@@ -274,15 +279,6 @@ export default function App({
         setViewingData={setViewingData}
         setViewEnabled={setViewEnabled}
         updateViewdWords={ids => updateViewdWords(ids, userData.tokenId).catch(onResponseNotOk)}
-      />
-      <Adder
-        isValid={isValid}
-        word={word}
-        meaning={meaning}
-        onAdd={onAdd}
-        setWord={setWord}
-        setMeaning={setMeaning}
-        setValidity={setValidity}
       />
     </div>
   );

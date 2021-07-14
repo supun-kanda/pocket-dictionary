@@ -39,6 +39,7 @@ export default function Profile({
                 aria-label="more"
                 aria-controls="long-menu"
                 aria-haspopup="true"
+                style={{ stroke: 'white', color: 'white', strokeWidth: 2 }}
                 onClick={handleClick}
             >
                 <MoreVertIcon />
