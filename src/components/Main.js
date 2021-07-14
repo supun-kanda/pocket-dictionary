@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
 // components
 import InfoModal from './InfoModal';
@@ -9,8 +9,8 @@ import {
   Switch,
   Route,
 } from 'react-router-dom';
-import App from './App/App';
-import Login from './Login/Login';
+import App from './App';
+import Login from './Login';
 
 import { setUserData as setLocalStorage } from '../util/util';
 import { userInitialState, infoInitialState } from '../util/const';
