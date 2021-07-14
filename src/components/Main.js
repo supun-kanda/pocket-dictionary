@@ -15,7 +15,8 @@ import Login from './Login/Login';
 import { setUserData as setLocalStorage } from '../util/util';
 import { userInitialState, infoInitialState } from '../util/const';
 import { StatusCodes } from 'http-status-codes';
-import { GOOGLE_CLIENT_ID } from '../util/const';
+
+const { GOOGLE_CLIENT_ID } = process.env;
 
 // styles
 import '../Main.css';
