@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
-import { List, AutoSizer } from "react-virtualized";
+import React, { useState, useEffect } from 'react';
+import {
+  List,
+  AutoSizer,
+} from "react-virtualized";
 import { makeStyles } from '@material-ui/core/styles';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import IconButton from '@material-ui/core/IconButton';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-
-import clsx from 'clsx';
-
+import Row from './Row';
 import PropTypes from 'prop-types';
+import { ROW_MODS } from '../../../util/const';
 
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
   '@global': {
     '*::-webkit-scrollbar': {
       width: '0.6em'
@@ -27,88 +26,71 @@ const useStyles = makeStyles(theme => ({
     height: '100%',
     top: '50px',
   },
-  row: {
-    borderBottom: '1px solid #ebeced',
-    textAlign: 'left',
-    margin: '5px 0',
-    alignItems: 'center',
-    '&:hover $expand': {
-      visibility: 'visible',
-    },
-    '&:hover $expandOpen': { // <-- pay attention to usage of $
-      visibility: 'visible',
-    },
-  },
-  word: {
-    display: 'inline-block',
-    position: 'relative',
-    width: '30%',
-    left: '1%'
-  },
-  meaning: {
-    display: 'inline-block',
-    position: 'relative',
-    width: '54%',
-  },
-  views: {
-    display: 'inline-block',
-    opacity: '0.2',
-    width: '10%'
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-    visibility: 'hidden',
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
-    visibility: 'hidden',
-  },
 }));
 
+let DynamicRows;
+function setRef(ref) {
+  DynamicRows = ref;
+}
 export default function Table({
   data,
+  exposed,
+  setExposed,
+  getWordByKey,
+  keyword,
+  editor,
 }) {
   const classes = useStyles();
-  const [expanded, setExpanded] = useState(false);
+  const [expandedKey, setExpandedKey] = useState(null);
+  const [scrollTo, setScrollTo] = useState(-1);
+  const getRowHeight = (props) => {
+    return data[props.index].key === expandedKey ? 100 : 50;
+  }
 
-  const handleExpandClick = () => {
-    setExpanded(!expanded);
+  const handleExpandClick = index => {
+    const newKey = data[index].key;
+    const isExpanded = expandedKey !== newKey;
+
+    setExpandedKey(isExpanded ? newKey : null);
+
+    if (isExpanded && !exposed.includes(newKey)) {
+      setExposed([...exposed, newKey]);
+    }
+
+    DynamicRows.recomputeRowHeights();
+    DynamicRows.forceUpdate();
   };
+
+  /**
+   * componentDidUpdate with keyword change
+   */
+  useEffect(() => {
+    const editMode = editor.mode;
+    if ([ROW_MODS.UPDATE, ROW_MODS.WRITE].includes(editMode)) {
+      setExpandedKey(editor.id);
+      if (editMode === ROW_MODS.WRITE) {
+        setScrollTo(0);
+      }
+    }
+    DynamicRows.recomputeRowHeights();
+    DynamicRows.forceUpdate();
+  }, [keyword, editor]);
+
   const renderRow = ({ index, key, style }) => {
     return (
-      <div key={key} style={style} className={classes.row} onClick={handleExpandClick}>
-        <div>
-          <div className={classes.word}>
-            <h3>{data[index].word}</h3>
-          </div>
-          <div className={classes.meaning}>{data[index].meaning}</div>
-          <div className={classes.views}>
-            123
-            <div style={{
-              verticalAlign: 'middle',
-              paddingLeft: '5px',
-              display: 'inline-block',
-            }}><VisibilityIcon /></div>
-          </div>
-          <div style={{ display: 'inline-block' }}>
-            <IconButton
-              className={clsx(classes.expand, {
-                [classes.expandOpen]: expanded,
-              })}
-              onClick={handleExpandClick}
-              aria-expanded={expanded}
-              aria-label="show more"
-            >
-              <ExpandMoreIcon />
-            </IconButton>
-          </div>
-        </div>
-      </div >
-    )
+      <Row
+        key={key}
+        isExpanded={data[index].key === expandedKey}
+        index={index}
+        rowKey={key}
+        style={style}
+        data={data || []}
+        handleExpandClick={handleExpandClick}
+        exposed={exposed}
+        getWordByKey={getWordByKey}
+      />
+    );
+
   };
 
   return (
@@ -117,12 +99,14 @@ export default function Table({
         {
           ({ width, height }) => {
             return <List
+              ref={setRef}
               width={width}
               height={height}
-              rowHeight={50}
+              rowHeight={getRowHeight}
               rowRenderer={renderRow}
               rowCount={data.length || 0}
               overscanRowCount={10}
+              scrollToIndex={scrollTo}
             />
           }
         }
@@ -139,4 +123,7 @@ Table.propTypes = {
   viewingData: PropTypes.array,
   setViewEnabled: PropTypes.func,
   updateViewdWords: PropTypes.func,
+  getWordByKey: PropTypes.func,
+  keyword: PropTypes.string,
+  editor: PropTypes.object,
 };

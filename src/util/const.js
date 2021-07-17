@@ -10,3 +10,18 @@ export const infoInitialState = {
     alert: null,
     code: 0,
 }
+
+export const ROW_MODS = {
+    READ: 0,
+    WRITE: 1,
+    UPDATE: 2,
+}
+
+export const editorInitialState = {
+    isEditing: false,
+    mode: ROW_MODS.READ,
+    word: null,
+    meaning: null,
+    id: null,
+    synonyms: [],
+}
