@@ -1,9 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { List, AutoSizer } from "react-virtualized";
 import { makeStyles } from '@material-ui/core/styles';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import IconButton from '@material-ui/core/IconButton';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+
+import clsx from 'clsx';
+
 import PropTypes from 'prop-types';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
   '@global': {
     '*::-webkit-scrollbar': {
       width: '0.6em'
@@ -25,8 +31,41 @@ const useStyles = makeStyles(() => ({
     borderBottom: '1px solid #ebeced',
     textAlign: 'left',
     margin: '5px 0',
-    display: 'flex',
     alignItems: 'center',
+    '&:hover $expand': {
+      visibility: 'visible',
+    },
+    '&:hover $expandOpen': { // <-- pay attention to usage of $
+      visibility: 'visible',
+    },
+  },
+  word: {
+    display: 'inline-block',
+    position: 'relative',
+    width: '30%',
+    left: '1%'
+  },
+  meaning: {
+    display: 'inline-block',
+    position: 'relative',
+    width: '54%',
+  },
+  views: {
+    display: 'inline-block',
+    opacity: '0.2',
+    width: '10%'
+  },
+  expand: {
+    transform: 'rotate(0deg)',
+    marginLeft: 'auto',
+    transition: theme.transitions.create('transform', {
+      duration: theme.transitions.duration.shortest,
+    }),
+    visibility: 'hidden',
+  },
+  expandOpen: {
+    transform: 'rotate(180deg)',
+    visibility: 'hidden',
   },
 }));
 
@@ -34,15 +73,41 @@ export default function Table({
   data,
 }) {
   const classes = useStyles();
+  const [expanded, setExpanded] = useState(false);
 
+  const handleExpandClick = () => {
+    setExpanded(!expanded);
+  };
   const renderRow = ({ index, key, style }) => {
     return (
-      <div key={key} style={style} className={classes.row}>
-        <div className={classes.content}>
-          <div>{data[index].word}</div>
-          <div>{data[index].meaning}</div>
+      <div key={key} style={style} className={classes.row} onClick={handleExpandClick}>
+        <div>
+          <div className={classes.word}>
+            <h3>{data[index].word}</h3>
+          </div>
+          <div className={classes.meaning}>{data[index].meaning}</div>
+          <div className={classes.views}>
+            123
+            <div style={{
+              verticalAlign: 'middle',
+              paddingLeft: '5px',
+              display: 'inline-block',
+            }}><VisibilityIcon /></div>
+          </div>
+          <div style={{ display: 'inline-block' }}>
+            <IconButton
+              className={clsx(classes.expand, {
+                [classes.expandOpen]: expanded,
+              })}
+              onClick={handleExpandClick}
+              aria-expanded={expanded}
+              aria-label="show more"
+            >
+              <ExpandMoreIcon />
+            </IconButton>
+          </div>
         </div>
-      </div>
+      </div >
     )
   };
 
