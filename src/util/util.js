@@ -77,3 +77,31 @@ export const isValidEntry = (word, meaning, tableData = []) => {
     }
     return false;
 }
+
+/**
+ * search and filter the data based on keyword
+ * @param {String} keyword search keyword eg: 'word'
+ * @param {Array} data word data array eg: [{word:'word1'},{word:'word2'},{word:'abc'},...]
+ * @returns {Object} filtered array eg: filteredData: {[{word:'word1'},{word:'word2'}], exactId: null}
+ */
+export const filterData = (keyword, data) => {
+    if (!keyword) {
+        return { filteredData: data, exactId: null };
+    }
+    if (!Array.isArray(data)) {
+        return { filteredData: [], exactId: null };
+    }
+
+    const keywordLower = keyword.toLowerCase();
+    let exactId = null;
+
+    const filteredData = data.filter(element => {
+        const elementWord = element && element.word && element.word.toLowerCase();
+        const includes = element && elementWord && elementWord.includes(keywordLower);
+        if (includes && elementWord === keywordLower) {
+            exactId = element.key;
+        }
+        return includes;
+    });
+    return { filteredData, exactId }
+}

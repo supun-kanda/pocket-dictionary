@@ -10,6 +10,7 @@ import {
 import {
     formatText,
     isValidEntry,
+    filterData,
 } from '../util/util';
 
 describe('formatText tests', () => {
@@ -62,4 +63,34 @@ describe('isValidEntry tests', () => {
         expect(isValidEntry('Word1', 'meaning', invalidTableData)).to.be.true;
         expect(isValidEntry('Word1', 'meaning', [...invalidTableData, { word: 'word1' }])).to.be.false;
     });
+});
+
+
+describe('filterData tests', () => {
+    const data = [{ word: 'aaa', key: 1 }, { word: 'bab' }, { word: 'aac' }];
+
+    it('null checks', function () {
+        expect(filterData(null, null)).to.be.eql({ filteredData: null, exactId: null });
+        expect(filterData(null, [])).to.be.eql({ filteredData: [], exactId: null });
+        expect(filterData(null, data)).to.be.eql({ filteredData: data, exactId: null });
+
+        expect(filterData('aa', null)).to.be.eql({ filteredData: [], exactId: null });
+        expect(filterData('aa', {})).to.be.eql({ filteredData: [], exactId: null });
+    });
+
+    it('valid checks', function () {
+        expect(filterData('aa', data)).to.be.eql({ filteredData: [data[0], data[2]], exactId: null });
+        expect(filterData('a', data)).to.be.eql({ filteredData: data, exactId: null });
+        expect(filterData('aaa', data)).to.be.eql({ filteredData: [data[0]], exactId: 1 });
+        expect(filterData('aaad', data)).to.be.eql({ filteredData: [], exactId: null });
+        expect(filterData('aaa', [...data, { ...data[0], word: 'aaad', key: 2 }])).to.be.eql({ filteredData: [data[0], { word: 'aaad', key: 2 }], exactId: 1 });
+        expect(filterData('AaA', data)).to.be.eql({ filteredData: [data[0]], exactId: 1 });
+    });
+
+
+    it('invalid data checks', function () {
+        expect(filterData('aa', ['test1', 'test2'])).to.be.eql({ filteredData: [], exactId: null });
+        expect(filterData('aa', [{ word: null }])).to.be.eql({ filteredData: [], exactId: null });
+    });
+
 });

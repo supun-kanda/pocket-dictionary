@@ -19,13 +19,13 @@ import PropTypes from 'prop-types';
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    position: 'fixed',
+    position: 'absolute',
     top: 0,
     marginBottom: 10,
     width: '75%',
     backgroundImage: 'linear-gradient(to right, #ffffff , #006080)',
     borderRadius: '10px',
-    minHeight: '5%'
+    minHeight: '50px',
   },
   bar: {
     display: 'flex',
@@ -36,6 +36,7 @@ const useStyles = makeStyles((theme) => ({
     marginRight: theme.spacing(2),
   },
   title: {
+    maxHeight: 'inherit',
     flexGrow: 1,
   },
   search: {
@@ -78,12 +79,6 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     alignItems: 'center',
   },
-  divider: {
-    height: 28,
-    display: 'flex',
-    alignItems: 'center',
-    color: 'black',
-  },
 }));
 
 export default function Bar({
@@ -101,6 +96,7 @@ export default function Bar({
   word,
   meaning,
   setValidity,
+  onSearchChange,
 }) {
   const classes = useStyles();
 
@@ -117,6 +113,7 @@ export default function Bar({
               <InputBase
                 placeholder="Search or Add"
                 inputProps={{ 'aria-label': 'search' }}
+                onChange={onSearchChange}
               />
             </div>
             <button
@@ -175,4 +172,5 @@ AppBar.propTypes = {
   setWord: PropTypes.func,
   setMeaning: PropTypes.func,
   setValidity: PropTypes.func,
+  onSearchChange: PropTypes.func,
 };
