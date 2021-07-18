@@ -59,6 +59,7 @@ export default function App({
 }) {
   const classes = useStyles();
 
+  // editor row
   const [editor, setEditor] = useState(editorInitialState);
   const [abort, setAbort] = useState(false);
 
@@ -232,12 +233,24 @@ export default function App({
     })
   }
 
+  /**
+   * on search keyword change
+   * @param {Event} e event 
+   */
   const onSearchChange = e => {
     setKeyword(e.target.value);
   }
 
+  /**
+   * get word object of current tableData state by wordId
+   * @param {Number} key word Id
+   * @returns wordObject of the given Id
+   */
   const getWordByKey = key => id2Data[key] || {};
 
+  /**
+   * On app bar add button click
+   */
   const onAddClick = () => {
     const editingObj = {
       ...editorInitialState,
@@ -253,6 +266,10 @@ export default function App({
     setTableData([{ word: keyword, key: -1, meaning: '' }, ...tableData])
   }
 
+  /**
+   * on edit icon click on row
+   * @param {Number} wordId wordId
+   */
   const onEdit = (wordId) => {
     const word = id2Data[wordId];
 
@@ -269,6 +286,10 @@ export default function App({
     setEditor(editingObj);
   }
 
+  /**
+   * On delete icon press in a row
+   * @param {Number} key wordId
+   */
   const onDeleteWord = key => {
     setTableLoading(true);
     deleteWord(key, userData.tokenId)
@@ -277,12 +298,20 @@ export default function App({
       .finally(() => setTableLoading(false));
   }
 
+  /**
+   * on drop down
+   * @param {Number} key wordId
+   */
   const onViewIncrement = key => {
     incrementView(key, userData.tokenId)
       .then(() => setTableData(tableData.map(e => e.key === key ? { ...e, views: e.views + 1 } : e)))
       .catch(onResponseNotOk);
   }
 
+  /**
+   * on eye icon press in a row
+   * @param {Number} key wordId
+   */
   const onViewReset = key => {
     resetView(key, userData.tokenId)
       .then(() => setTableData(tableData.map(e => e.key === key ? { ...e, views: 1 } : e)))

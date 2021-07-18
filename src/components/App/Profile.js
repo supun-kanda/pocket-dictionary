@@ -28,11 +28,18 @@ export default function Profile({
 }) {
     const [anchorEl, setAnchorEl] = useState(null);
 
+    /**
+     * on profile menu click
+     * @param {Event} event event
+     */
     const handleClick = (event) => {
         setOpen(true);
         setAnchorEl(event.currentTarget);
     };
 
+    /**
+     * on profile menu close
+     */
     const handleClose = () => {
         setAnchorEl(null);
         setOpen(false);
@@ -78,7 +85,7 @@ export default function Profile({
                     <ListItemIcon>
                         <CodeIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary={VERSION} />
+                    <ListItemText primary={`v${VERSION}`} />
                 </StyledMenuItem>
             </StyledMenu>
         </div>
