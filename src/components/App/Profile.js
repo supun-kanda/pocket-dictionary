@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+
 import IconButton from '@material-ui/core/IconButton';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -6,11 +7,15 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { withStyles } from '@material-ui/core/styles';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+
 import PropTypes from 'prop-types';
+
 import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import ExitToAppIcon from '@material-ui/icons/ExitToApp';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import CodeIcon from '@material-ui/icons/Code';
 
+const { REACT_APP_VERSION: VERSION } = process.env;
 export default function Profile({
     userData: {
         name,
@@ -68,6 +73,12 @@ export default function Profile({
                         <DeleteForeverIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText primary="Delete Account" />
+                </StyledMenuItem>
+                <StyledMenuItem disabled>
+                    <ListItemIcon>
+                        <CodeIcon fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary={VERSION} />
                 </StyledMenuItem>
             </StyledMenu>
         </div>

@@ -8,8 +8,10 @@ import Table from './Table';
 import {
   fetchTableData,
   insertNewWord,
-  updateViewdWords,
   updateWord,
+  deleteWord,
+  resetView,
+  incrementView,
 } from '../../actions/tableData';
 import { deleteUser } from '../../actions/user';
 import {
@@ -64,6 +66,7 @@ export default function App({
   const [tableData, setTableData] = useState([]);
   const [exposed, setExposed] = useState([]);
   const [id2Data, setId2Data] = useState({});
+  const [expandedKey, setExpandedKey] = useState(null);
 
   // search
   const [filterData, setFilterData] = useState([]);
@@ -96,11 +99,13 @@ export default function App({
       meaning,
       synonyms,
       mode,
+      key,
     } = editor;
 
     word = word ? word.toLowerCase().trim() : null;
     meaning = meaning ? meaning.toLowerCase().trim() : null;
     const { isValid, code: errCodes } = isValidEntry(word, meaning, synonyms, tableData, mode)
+
     if (isValid) {
       setEditor({ ...editor, word, meaning })
     } else {
@@ -113,25 +118,28 @@ export default function App({
       let wordId;
       // update react states
       if (mode === ROW_MODS.WRITE) {
-        wordId = await insertNewWord(newWord, userData.tokenId);
+        const response = await insertNewWord(newWord, userData.tokenId);
+        wordId = response.key;
 
         const tD = [...tableData];
-        const updatedRecord = tD.shift();
+        tD.shift();
+
         setTableData([{
-          ...updatedRecord,
+          ...newWord,
           key: wordId,
+          views: 1,
         }, ...tD]);
       } else if (mode === ROW_MODS.UPDATE) {
         const updatedRecord = {
           word: newWord.word,
-          key: editor.id,
+          key,
           meaning: newWord.meaning,
-          synonyms: editor.synonyms,
+          synonyms: synonyms,
         }
         await updateWord(updatedRecord, userData.tokenId);
 
         const newTd = tableData.map(e => {
-          const isUpdatedWord = e.key === editor.id;
+          const isUpdatedWord = e.key === key;
           if (isUpdatedWord) {
             wordId = e.key;
           }
@@ -143,10 +151,9 @@ export default function App({
 
       setExposed([...exposed, wordId]);
       setEditor(editorInitialState);
+      setExpandedKey(wordId);
     } catch (error) {
-      if (!onResponseNotOk(error)) {
-        console.log("DB ERROR, add modal");
-      }
+      onResponseNotOk(error)
     } finally {
       setTableLoading(false);
     }
@@ -166,6 +173,7 @@ export default function App({
       setTableLoading(false);
       setResetEnabled(false);
       setExposed([]);
+      setExpandedKey(null);
     }
   }
 
@@ -228,15 +236,15 @@ export default function App({
     setKeyword(e.target.value);
   }
 
-  const getWordByKey = key => id2Data[key];
+  const getWordByKey = key => id2Data[key] || {};
 
   const onAddClick = () => {
     const editingObj = {
       ...editorInitialState,
       isEditing: true,
-      key: keyword,
+      word: keyword,
       mode: ROW_MODS.WRITE,
-      id: -1,
+      key: -1,
       meaning: '',
     };
 
@@ -251,14 +259,34 @@ export default function App({
     const editingObj = {
       ...editorInitialState,
       isEditing: true,
-      key: word.word,
+      word: word.word,
       mode: ROW_MODS.UPDATE,
-      id: wordId,
+      key: wordId,
       meaning: word.meaning,
       synonyms: word.synonyms,
     };
 
     setEditor(editingObj);
+  }
+
+  const onDeleteWord = key => {
+    setTableLoading(true);
+    deleteWord(key, userData.tokenId)
+      .then(() => setTableData(tableData.filter(e => e.key !== key)))
+      .catch(onResponseNotOk)
+      .finally(() => setTableLoading(false));
+  }
+
+  const onViewIncrement = key => {
+    incrementView(key, userData.tokenId)
+      .then(() => setTableData(tableData.map(e => e.key === key ? { ...e, views: e.views + 1 } : e)))
+      .catch(onResponseNotOk);
+  }
+
+  const onViewReset = key => {
+    resetView(key, userData.tokenId)
+      .then(() => setTableData(tableData.map(e => e.key === key ? { ...e, views: 1 } : e)))
+      .catch(onResponseNotOk);
   }
 
   /**
@@ -373,7 +401,6 @@ export default function App({
         deleteAccount={onDeleteAccountClick}
         isOpen={isProfileOpen}
         setOpen={setProfileOpen}
-
         keyword={keyword}
         onSearchChange={onSearchChange}
         isAddDisabled={!!exactId || editor.isEditing}
@@ -382,7 +409,7 @@ export default function App({
       <div className={classes.table}>
         <Table
           data={filterData}
-          source={tableData.filter(e => editor.id !== e.key)}
+          source={tableData.filter(e => editor.key !== e.key)}
           exposed={exposed}
           setExposed={setExposed}
           getWordByKey={getWordByKey}
@@ -393,6 +420,11 @@ export default function App({
           map={id2Data}
           onSubmit={onSubmit}
           onEdit={onEdit}
+          expandedKey={expandedKey}
+          setExpandedKey={setExpandedKey}
+          onDeleteWord={onDeleteWord}
+          onViewIncrement={onViewIncrement}
+          onViewReset={onViewReset}
         />
       </div>
     </div>

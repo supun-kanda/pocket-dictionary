@@ -3,8 +3,10 @@ import {
     getAuthTokenFormat,
 } from '../util/util';
 
+const { REACT_APP_API_URL: API_URL } = process.env;
+
 export const getUserInfo = tokenId => {
-    return fetch(`/api/db-connections/fetchUser`, {
+    return fetch(`${API_URL}/db-connections/fetchUser`, {
         method: 'GET',
         ...getAuthTokenFormat(tokenId),
     })
@@ -13,7 +15,7 @@ export const getUserInfo = tokenId => {
 }
 
 export const deleteUser = (email, tokenId) => {
-    return fetch(`/api/db-connections/deleteUser?email=${email}`, {
+    return fetch(`${API_URL}/db-connections/deleteUser?email=${email}`, {
         method: 'DELETE',
         ...getAuthTokenFormat(tokenId),
     })

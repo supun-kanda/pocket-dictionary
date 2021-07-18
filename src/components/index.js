@@ -19,7 +19,10 @@ import { setUserData as setLocalStorage } from '../util/util';
 import { userInitialState, infoInitialState } from '../util/const';
 import { StatusCodes } from 'http-status-codes';
 
-const { REACT_APP_CLIENT_ID: GOOGLE_CLIENT_ID } = process.env;
+const {
+  REACT_APP_CLIENT_ID: GOOGLE_CLIENT_ID,
+  REACT_APP_CALLBACK_URL: CALLBACK_URL,
+} = process.env;
 
 function Main() {
 
@@ -54,7 +57,7 @@ function Main() {
         buttonText="Log in with Google"
         cookiePolicy={'single_host_origin'}
         uxMode="redirect"
-        redirectUri="https://dictionary.supun-kandambige.com/login"
+        redirectUri={CALLBACK_URL}
       />
     </div>
   )

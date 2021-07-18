@@ -22,7 +22,7 @@ export const editorInitialState = {
     mode: ROW_MODS.READ,
     word: null,
     meaning: null,
-    id: null,
+    key: null,
     synonyms: [],
     isValid: true,
     errCodes: [],

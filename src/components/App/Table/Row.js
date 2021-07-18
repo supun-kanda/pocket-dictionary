@@ -153,8 +153,7 @@ export function EditableRow({
                     </IconButton>
                 </div>
                 <IconButton
-                    // color='green'
-                    style={{ display: 'inline-block', color: '#35F321' }}
+                    style={{ display: 'inline-block', color: isValid ? '#35F321' : 'grey' }}
                     disabled={!isValid}
                     onClick={onSubmit}
                 >
@@ -182,6 +181,7 @@ export function EditableRow({
                     onChange={onWordCange}
                     size='small'
                     error={errCodes.includes(INVALID_INPUTS.WORD)}
+                    type='search'
                 />
                 <TextField
                     label="Meaning"
@@ -194,6 +194,7 @@ export function EditableRow({
                     onChange={onMeaningChange}
                     size='small'
                     error={errCodes.includes(INVALID_INPUTS.MEANING)}
+                    type='search'
                 />
                 <div style={{
                     width: '9%',
@@ -248,6 +249,8 @@ export default function Row({
     exposed,
     getWordByKey,
     onEdit,
+    onDeleteWord,
+    onViewReset,
 }) {
     const classes = useStyles();
     const dataPoint = data[index];
@@ -262,15 +265,15 @@ export default function Row({
                         {dataPoint.synonyms.map(id => {
                             const sData = getWordByKey(id);
                             const sWord = sData.word;
-                            return (
-                                <div style={{ display: 'inline-block', paddingRight: '1px' }}>
+                            return sWord ? (
+                                <div key={id} style={{ display: 'inline-block', paddingRight: '1px' }}>
                                     <Chip
                                         avatar={<Avatar>{sWord[0]}</Avatar>}
                                         label={sWord}
                                         color='primary'
                                     />
                                 </div>
-                            );
+                            ) : null;
                         })}
                     </div> :
                     <div style={{ opacity: 0.3 }}>
@@ -290,6 +293,7 @@ export default function Row({
                     <IconButton
                         style={{ display: 'inline-block', }}
                         color='primary'
+                        onClick={() => onViewReset(dataPoint.key)}
                     >
                         <VisibilityIcon />
                     </IconButton>
@@ -304,6 +308,7 @@ export default function Row({
                 <IconButton
                     color='secondary'
                     style={{ display: 'inline-block', }}
+                    onClick={() => onDeleteWord(dataPoint.key)}
                 >
                     <DeleteForeverIcon />
                 </IconButton>
@@ -314,7 +319,7 @@ export default function Row({
                     opacity: '0.2',
                     display: 'inline-block',
                 }}>
-                    123
+                    {dataPoint.views}
                     <IconButton className={classes.viewEye}>
                         <VisibilityIcon />
                     </IconButton>
@@ -358,7 +363,9 @@ Row.propTypes = {
     rowKey: PropTypes.string,
     exposed: PropTypes.array,
     getWordByKey: PropTypes.func,
-    onEdit: PropTypes.func,
+    onEdit: PropTypes.func.isRequired,
+    onDeleteWord: PropTypes.func.isRequired,
+    onViewReset: PropTypes.func.isRequired,
 };
 
 EditableRow.propTypes = {

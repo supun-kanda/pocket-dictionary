@@ -48,7 +48,7 @@ describe('isValidEntry tests', () => {
     });
 
     it('word already exists error', function () {
-        expect(isValidEntry('alreadyValue', 'hasMeaning', null, [{ word: 'alreadyValue' }])).to.be.eql(errResp);
+        expect(isValidEntry('alreadyvalue', 'hasMeaning', null, [{ word: 'alreadyValue' }])).to.be.eql(errResp);
     });
     it('valid inputs', function () {
         expect(isValidEntry('word', 'meaning', null, tableData)).to.be.eql(resp);
@@ -57,17 +57,20 @@ describe('isValidEntry tests', () => {
     });
 
     it('invalid existing different case inputs', function () {
-        expect(isValidEntry('Word1', 'meaning', [], tableData)).to.be.eql(errResp);
+        expect(isValidEntry('word1', 'meaning', [], tableData)).to.be.eql(errResp);
     });
 
     it('valid input with invalid tableData', function () {
-        expect(isValidEntry('Word1', 'meaning', [], invalidTableData)).to.be.eql(resp);
-        expect(isValidEntry('Word1', 'meaning', [], [...invalidTableData, { word: 'word1' }])).to.be.eql(errResp);
+        expect(isValidEntry('word1', 'meaning', [], invalidTableData)).to.be.eql(resp);
+        expect(isValidEntry('word1', 'meaning', [], [...invalidTableData, { word: 'word1' }])).to.be.eql(errResp);
     });
 
-
     it('valid input with update mode', function () {
-        expect(isValidEntry('Word1', 'meaning', [], tableData, ROW_MODS.UPDATE)).to.be.eql(resp);
+        expect(isValidEntry('word1', 'meaning', [], tableData, ROW_MODS.UPDATE)).to.be.eql(resp);
+    });
+
+    it('existing table input of word entry', function () {
+        expect(isValidEntry('word1', 'meaning', [], [{ word: 'word1', key: -1 }], ROW_MODS.WRITE)).to.be.eql(resp);
     });
 });
 

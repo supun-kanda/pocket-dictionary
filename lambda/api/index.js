@@ -134,9 +134,8 @@ async function manager(pool, endpoint, ownerId, body, qp) {
             key = parsedBody.key;
 
             await pool.query(UPDATE_WORD, [word, meaning, key]);
-            result = await pool.query(GET_SYNONYMS_BY_WORD_ID, [word]);
+            result = await pool.query(GET_SYNONYMS_BY_WORD_ID, [key]);
             rows = result.rows;
-            console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@', rows)
 
             const change = deriveSynonyms(synonyms, rows.map(e => e['secondary_id']));
             for (let a of change.add) {

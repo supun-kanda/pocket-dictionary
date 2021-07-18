@@ -144,7 +144,10 @@ export default function Bar({
                 aria-label="RefreshRounded"
                 aria-controls="long-menu"
                 aria-haspopup="true"
-                style={{ stroke: 'white', color: 'white' }}
+                style={{
+                  color: 'white',
+                  visibility: isResetEnabled ? 'visible' : 'hidden',
+                }}
               />
             </button>
 

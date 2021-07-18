@@ -84,7 +84,7 @@ export const isValidEntry = (word, meaning, synonyms, tableData = [], mode = ROW
     if (mode === ROW_MODS.UPDATE) {
         return { isValid: true, code: [] };
     }
-    if (!!tableData.find(e => e && e.word && e.word.toLowerCase() === word.toLowerCase())) {
+    if (!!tableData.find(e => e && e.word && e.key !== -1 && e.word.toLowerCase() === word)) {
         return { isValid: false, code: [INVALID_INPUTS.WORD] };
     }
     return { isValid: true, code: [] };

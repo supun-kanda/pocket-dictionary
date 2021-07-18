@@ -47,13 +47,17 @@ export default function Table({
   map,
   onSubmit,
   onEdit,
+  expandedKey,
+  setExpandedKey,
+  onDeleteWord,
+  onViewIncrement,
+  onViewReset,
 }) {
   const classes = useStyles();
-  const [expandedKey, setExpandedKey] = useState(null);
   const [scrollTo, setScrollTo] = useState(-1);
 
   const getRowHeight = (props) => {
-    return data[props.index].key === expandedKey ? 100 : 50;
+    return data[props.index].key === expandedKey ? 110 : 50;
   }
 
   const handleExpandClick = index => {
@@ -64,6 +68,9 @@ export default function Table({
 
     if (isExpanded && !exposed.includes(newKey)) {
       setExposed([...exposed, newKey]);
+      if (newKey >= 0) {
+        onViewIncrement(newKey);
+      }
     }
 
     DynamicRows.recomputeRowHeights();
@@ -76,30 +83,35 @@ export default function Table({
   useEffect(() => {
     const editMode = editor.mode;
     if ([ROW_MODS.UPDATE, ROW_MODS.WRITE].includes(editMode)) {
-      setExpandedKey(editor.id);
+      setExpandedKey(editor.key);
       if (editMode === ROW_MODS.WRITE) {
         setScrollTo(0);
       }
     }
     DynamicRows.recomputeRowHeights();
     DynamicRows.forceUpdate();
-  }, [keyword, editor]);
+  }, [keyword, editor, setExpandedKey]);
+
+  useEffect(() => {
+    DynamicRows.recomputeRowHeights();
+    DynamicRows.forceUpdate();
+  }, [data]);
 
   const renderRow = ({ index, key, style }) => {
     const currWordId = data[index].key;
     const isExpanded = currWordId === expandedKey;
 
-    return currWordId === editor.id && isExpanded ? (
+    return currWordId === editor.key && isExpanded ? (
       <EditableRow
         key={key}
         index={index}
         rowKey={key}
         style={style}
         handleExpandClick={handleExpandClick}
-        word={editor.key}
+        word={editor.word}
         meaning={editor.meaning}
         synonyms={editor.synonyms || []}
-        onWordCange={e => setEditor({ ...editor, key: e.target.value, ...resetValidity(INVALID_INPUTS.WORD, editor.errCodes) })}
+        onWordCange={e => setEditor({ ...editor, word: e.target.value, ...resetValidity(INVALID_INPUTS.WORD, editor.errCodes) })}
         onMeaningChange={e => setEditor({ ...editor, meaning: e.target.value, ...resetValidity(INVALID_INPUTS.MEANING, editor.errCodes) })}
         onSynonymChange={v => setEditor({ ...editor, synonyms: v, ...resetValidity(INVALID_INPUTS.SYNONYM, editor.errCodes) })}
         isExpanded={isExpanded}
@@ -123,9 +135,10 @@ export default function Table({
         exposed={exposed}
         getWordByKey={getWordByKey}
         onEdit={onEdit}
+        onDeleteWord={onDeleteWord}
+        onViewReset={onViewReset}
       />
     )
-
   };
 
   return (
@@ -142,6 +155,11 @@ export default function Table({
               rowCount={data.length || 0}
               overscanRowCount={10}
               scrollToIndex={scrollTo}
+              noRowsRenderer={() =>
+                <div style={{ opacity: 0.2 }}>
+                  <h1>Start by adding Words</h1>
+                </div>
+              }
             />
           }
         }
@@ -163,4 +181,9 @@ Table.propTypes = {
   map: PropTypes.object,
   onSubmit: PropTypes.func,
   onEdit: PropTypes.func,
+  expandedKey: PropTypes.number,
+  setExpandedKey: PropTypes.func.isRequired,
+  onDeleteWord: PropTypes.func.isRequired,
+  onViewIncrement: PropTypes.func.isRequired,
+  onViewReset: PropTypes.func.isRequired,
 };
