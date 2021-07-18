@@ -4,9 +4,11 @@ import {
   AutoSizer,
 } from "react-virtualized";
 import { makeStyles } from '@material-ui/core/styles';
-import Row from './Row';
+import Row, { EditableRow } from './Row';
 import PropTypes from 'prop-types';
-import { ROW_MODS } from '../../../util/const';
+
+import { resetValidity } from '../../../util/util';
+import { INVALID_INPUTS, ROW_MODS } from '../../../util/const';
 
 const useStyles = makeStyles(() => ({
   '@global': {
@@ -39,10 +41,17 @@ export default function Table({
   getWordByKey,
   keyword,
   editor,
+  setEditor,
+  setAbort,
+  source,
+  map,
+  onSubmit,
+  onEdit,
 }) {
   const classes = useStyles();
   const [expandedKey, setExpandedKey] = useState(null);
   const [scrollTo, setScrollTo] = useState(-1);
+
   const getRowHeight = (props) => {
     return data[props.index].key === expandedKey ? 100 : 50;
   }
@@ -77,10 +86,35 @@ export default function Table({
   }, [keyword, editor]);
 
   const renderRow = ({ index, key, style }) => {
-    return (
+    const currWordId = data[index].key;
+    const isExpanded = currWordId === expandedKey;
+
+    return currWordId === editor.id && isExpanded ? (
+      <EditableRow
+        key={key}
+        index={index}
+        rowKey={key}
+        style={style}
+        handleExpandClick={handleExpandClick}
+        word={editor.key}
+        meaning={editor.meaning}
+        synonyms={editor.synonyms || []}
+        onWordCange={e => setEditor({ ...editor, key: e.target.value, ...resetValidity(INVALID_INPUTS.WORD, editor.errCodes) })}
+        onMeaningChange={e => setEditor({ ...editor, meaning: e.target.value, ...resetValidity(INVALID_INPUTS.MEANING, editor.errCodes) })}
+        onSynonymChange={v => setEditor({ ...editor, synonyms: v, ...resetValidity(INVALID_INPUTS.SYNONYM, editor.errCodes) })}
+        isExpanded={isExpanded}
+        editMode={editor.mode}
+        setAbort={() => setAbort(true)}
+        source={source}
+        map={map}
+        onSubmit={onSubmit}
+        isValid={editor.isValid}
+        errCodes={editor.errCodes}
+      />
+    ) : (
       <Row
         key={key}
-        isExpanded={data[index].key === expandedKey}
+        isExpanded={isExpanded}
         index={index}
         rowKey={key}
         style={style}
@@ -88,8 +122,9 @@ export default function Table({
         handleExpandClick={handleExpandClick}
         exposed={exposed}
         getWordByKey={getWordByKey}
+        onEdit={onEdit}
       />
-    );
+    )
 
   };
 
@@ -119,11 +154,13 @@ Table.propTypes = {
   data: PropTypes.array,
   exposed: PropTypes.array,
   setExposed: PropTypes.func,
-  setViewingData: PropTypes.func,
-  viewingData: PropTypes.array,
-  setViewEnabled: PropTypes.func,
-  updateViewdWords: PropTypes.func,
   getWordByKey: PropTypes.func,
   keyword: PropTypes.string,
-  editor: PropTypes.object,
+  editor: PropTypes.object.isRequired,
+  setEditor: PropTypes.func.isRequired,
+  setAbort: PropTypes.func,
+  source: PropTypes.array,
+  map: PropTypes.object,
+  onSubmit: PropTypes.func,
+  onEdit: PropTypes.func,
 };

@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 // components
-import Table from './DataTable';
-// import Manager from './Manager';
 import AppBar from './AppBar';
+import Table from './Table';
 
 // utils
 import {
   fetchTableData,
-  updateTableData,
+  insertNewWord,
   updateViewdWords,
+  updateWord,
 } from '../../actions/tableData';
 import { deleteUser } from '../../actions/user';
 import {
@@ -17,10 +17,31 @@ import {
   getUserData,
   setUserData as setLocalStorage,
   isValidEntry,
+  filterData as searchData,
 } from '../../util/util';
-import { userInitialState, infoInitialState } from '../../util/const';
+import {
+  userInitialState,
+  infoInitialState,
+  editorInitialState,
+  ROW_MODS,
+} from '../../util/const';
+
 import PropTypes from 'prop-types';
 
+//styles
+import { makeStyles } from '@material-ui/core/styles';
+
+const useStyles = makeStyles(() => ({
+  root: {
+    height: "100%"
+  },
+  bar: {
+    maxHeight: '50px',
+  },
+  table: {
+    height: 'calc(100vh - 80px)',
+  }
+}));
 export default function App({
   info,
   setInfo,
@@ -34,20 +55,23 @@ export default function App({
   setShouldClear,
   onResponseNotOk,
 }) {
+  const classes = useStyles();
 
-  // adder
-  const [isValid, setValidity] = useState(true);
-  const [word, setWord] = useState('');
-  const [meaning, setMeaning] = useState('');
+  const [editor, setEditor] = useState(editorInitialState);
+  const [abort, setAbort] = useState(false);
 
   // table
   const [tableData, setTableData] = useState([]);
   const [exposed, setExposed] = useState([]);
-  const [viewingData, setViewingData] = useState([]);
+  const [id2Data, setId2Data] = useState({});
+
+  // search
+  const [filterData, setFilterData] = useState([]);
+  const [keyword, setKeyword] = useState('');
+  const [exactId, setExactId] = useState(null);
 
   // manager
   const [isResetEnabled, setResetEnabled] = useState(false);
-  const [isViewEnabled, setViewEnabled] = useState(true);
   const [isProfileOpen, setProfileOpen] = useState(false);
 
   const fetchDataForValidUser = async tokenId => {
@@ -61,59 +85,73 @@ export default function App({
     }
   }
   /**
-   * On Add click
+   * On Submit click
    * @returns None
    */
-  const onAdd = async () => {
+  const onSubmit = async () => {
     setTableLoading(true);
 
-    if (!isValidEntry(word, meaning, tableData)) {
-      setValidity(false);
+    let {
+      word,
+      meaning,
+      synonyms,
+      mode,
+    } = editor;
+
+    word = word ? word.toLowerCase().trim() : null;
+    meaning = meaning ? meaning.toLowerCase().trim() : null;
+    const { isValid, code: errCodes } = isValidEntry(word, meaning, synonyms, tableData, mode)
+    if (isValid) {
+      setEditor({ ...editor, word, meaning })
+    } else {
+      setEditor({ ...editor, word, meaning, isValid, errCodes });
       return setTableLoading(false);
     }
+    const newWord = { word: formatText(word), meaning: formatText(meaning), synonyms };
 
     try {
-
-      const newWord = { word: formatText(word), meaning: formatText(meaning) };
-
-      // add new word to the table
-      const wordId = await updateTableData(newWord, userData.tokenId);
-
+      let wordId;
       // update react states
-      setTableData([
-        { ...newWord, key: wordId },
-        ...tableData
-      ]);
-      setExposed([...exposed, `${wordId}`]);
-      setWord('');
-      setMeaning('');
+      if (mode === ROW_MODS.WRITE) {
+        wordId = await insertNewWord(newWord, userData.tokenId);
 
+        const tD = [...tableData];
+        const updatedRecord = tD.shift();
+        setTableData([{
+          ...updatedRecord,
+          key: wordId,
+        }, ...tD]);
+      } else if (mode === ROW_MODS.UPDATE) {
+        const updatedRecord = {
+          word: newWord.word,
+          key: editor.id,
+          meaning: newWord.meaning,
+          synonyms: editor.synonyms,
+        }
+        await updateWord(updatedRecord, userData.tokenId);
+
+        const newTd = tableData.map(e => {
+          const isUpdatedWord = e.key === editor.id;
+          if (isUpdatedWord) {
+            wordId = e.key;
+          }
+          return isUpdatedWord ? updatedRecord : e
+        });
+
+        setTableData(newTd);
+      }
+
+      setExposed([...exposed, wordId]);
+      setEditor(editorInitialState);
     } catch (error) {
       if (!onResponseNotOk(error)) {
-        setValidity(false);
+        console.log("DB ERROR, add modal");
       }
     } finally {
       setTableLoading(false);
     }
 
   };
-
-  /**
-   * On view all button click
-   */
-  const onViewAll = () => {
-    if (!viewingData.length) {
-      return;
-    }
-
-    const viewedIds = viewingData.map(e => `${e.key}`);
-    const newlyExposed = viewedIds.filter(e => !exposed.includes(e));
-
-    updateViewdWords(viewedIds, userData.tokenId)
-      .catch(onResponseNotOk);
-    setExposed([...exposed, ...newlyExposed]);
-    setViewEnabled(false);
-  }
 
   /**
    * On reset button click
@@ -128,7 +166,6 @@ export default function App({
       setTableLoading(false);
       setResetEnabled(false);
       setExposed([]);
-      setViewEnabled(true);
     }
   }
 
@@ -136,16 +173,11 @@ export default function App({
    * clear all info while login out of delete account
    */
   const clearAll = () => {
-    setValidity(true);
-    setWord('');
-    setMeaning('');
     setTableLoading(false);
     setTableData([]);
     setExposed([]);
-    setViewingData([]);
     setResetEnabled(false);
-    setViewEnabled(true);
-    setUserData({ ...userInitialState });
+    setUserData(userInitialState);
 
     // open login modal when logout
     setLoginModalOpen(true);
@@ -190,6 +222,43 @@ export default function App({
       code: 9,
       alert: 'Are you sure you want to delete?'
     })
+  }
+
+  const onSearchChange = e => {
+    setKeyword(e.target.value);
+  }
+
+  const getWordByKey = key => id2Data[key];
+
+  const onAddClick = () => {
+    const editingObj = {
+      ...editorInitialState,
+      isEditing: true,
+      key: keyword,
+      mode: ROW_MODS.WRITE,
+      id: -1,
+      meaning: '',
+    };
+
+    setEditor(editingObj);
+    setKeyword('');
+    setTableData([{ word: keyword, key: -1, meaning: '' }, ...tableData])
+  }
+
+  const onEdit = (wordId) => {
+    const word = id2Data[wordId];
+
+    const editingObj = {
+      ...editorInitialState,
+      isEditing: true,
+      key: word.word,
+      mode: ROW_MODS.UPDATE,
+      id: wordId,
+      meaning: word.meaning,
+      synonyms: word.synonyms,
+    };
+
+    setEditor(editingObj);
   }
 
   /**
@@ -251,8 +320,49 @@ export default function App({
     }
   }, [shouldClear, setShouldClear]);
 
+  /**
+   * componentDidUpdate with search keyword/tableData change
+   */
+  useEffect(() => {
+    if (!keyword) {
+      setFilterData(tableData);
+    } else {
+      const { filteredData: searchedData, exactId: perfectMatchId } = searchData(keyword, tableData);
+      setFilterData(searchedData);
+      setExactId(perfectMatchId);
+    }
+  }, [keyword, tableData]);
+
+  /**
+   * componentDidUpdate with data change
+   */
+  useEffect(() => {
+
+    let map = {}
+    for (let word of tableData) {
+      map[word.key] = { ...word };
+    }
+    setId2Data({ ...map });
+  }, [tableData]);
+
+  /**
+   * componentDidUpdate with data change
+   */
+  useEffect(() => {
+    if (abort) {
+      const isWrite = editor.mode === ROW_MODS.WRITE;
+      setEditor(editorInitialState);
+
+      if (isWrite) {
+        tableData.shift()
+        setTableData([...tableData]);
+      }
+      setAbort(false);
+    }
+  }, [abort]);
+
   return (
-    <div>
+    <div className={classes.root}>
       <AppBar
         onReset={onReset}
         isResetEnabled={isResetEnabled}
@@ -263,23 +373,28 @@ export default function App({
         deleteAccount={onDeleteAccountClick}
         isOpen={isProfileOpen}
         setOpen={setProfileOpen}
-        isValid={isValid}
-        word={word}
-        meaning={meaning}
-        onAdd={onAdd}
-        setWord={setWord}
-        setMeaning={setMeaning}
-        setValidity={setValidity}
+
+        keyword={keyword}
+        onSearchChange={onSearchChange}
+        isAddDisabled={!!exactId || editor.isEditing}
+        onAdd={onAddClick}
       />
-      <Table
-        data={tableData}
-        exposed={exposed}
-        setExposed={setExposed}
-        viewingData={viewingData}
-        setViewingData={setViewingData}
-        setViewEnabled={setViewEnabled}
-        updateViewdWords={ids => updateViewdWords(ids, userData.tokenId).catch(onResponseNotOk)}
-      />
+      <div className={classes.table}>
+        <Table
+          data={filterData}
+          source={tableData.filter(e => editor.id !== e.key)}
+          exposed={exposed}
+          setExposed={setExposed}
+          getWordByKey={getWordByKey}
+          keyword={keyword}
+          editor={editor}
+          setEditor={setEditor}
+          setAbort={setAbort}
+          map={id2Data}
+          onSubmit={onSubmit}
+          onEdit={onEdit}
+        />
+      </div>
     </div>
   );
 }

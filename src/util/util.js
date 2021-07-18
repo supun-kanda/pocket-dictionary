@@ -1,4 +1,5 @@
 import ResponseError from './ResponseError';
+import { INVALID_INPUTS, ROW_MODS } from './const';
 
 /**
  * Trim and capitalized first letter. eg: ' test   ' => 'Test'
@@ -71,11 +72,22 @@ export const getTokenId = hash => {
  * @param {Array} tableData table data
  * @returns {Boolean} should the word allowed to be entered
  */
-export const isValidEntry = (word, meaning, tableData = []) => {
-    if (word && meaning) {
-        return !tableData.find(e => e && e.word && e.word.toLowerCase() === word.toLowerCase());
+export const isValidEntry = (word, meaning, synonyms, tableData = [], mode = ROW_MODS.WRITE) => {
+    if (!word) {
+        return { isValid: false, code: [INVALID_INPUTS.WORD] };
     }
-    return false;
+    const hasSynonyms = Array.isArray(synonyms) && synonyms.length;
+
+    if (!meaning && !hasSynonyms) {
+        return { isValid: false, code: [INVALID_INPUTS.MEANING, INVALID_INPUTS.SYNONYM] }
+    }
+    if (mode === ROW_MODS.UPDATE) {
+        return { isValid: true, code: [] };
+    }
+    if (!!tableData.find(e => e && e.word && e.word.toLowerCase() === word.toLowerCase())) {
+        return { isValid: false, code: [INVALID_INPUTS.WORD] };
+    }
+    return { isValid: true, code: [] };
 }
 
 /**
@@ -105,3 +117,24 @@ export const filterData = (keyword, data) => {
     });
     return { filteredData, exactId }
 }
+
+export const resetValidity = (field, currErrCodes) => {
+    const optionalGroup = [
+        INVALID_INPUTS.MEANING,
+        INVALID_INPUTS.SYNONYM,
+    ];
+    const isOptional = optionalGroup.includes(field);
+
+    let errCodes;
+    if (isOptional) {
+        errCodes = currErrCodes.filter(c => !optionalGroup.includes(c));
+    } else {
+        errCodes = currErrCodes.filter(c => c !== field);
+    }
+    const isValid = errCodes.length ? false : true;
+
+    return {
+        errCodes,
+        isValid,
+    };
+};

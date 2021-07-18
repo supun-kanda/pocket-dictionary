@@ -24,4 +24,12 @@ export const editorInitialState = {
     meaning: null,
     id: null,
     synonyms: [],
+    isValid: true,
+    errCodes: [],
+}
+
+export const INVALID_INPUTS = {
+    WORD: 0,
+    MEANING: 1,
+    SYNONYM: 2,
 }

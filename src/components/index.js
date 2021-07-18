@@ -19,7 +19,7 @@ import { setUserData as setLocalStorage } from '../util/util';
 import { userInitialState, infoInitialState } from '../util/const';
 import { StatusCodes } from 'http-status-codes';
 
-const { GOOGLE_CLIENT_ID } = process.env;
+const { REACT_APP_CLIENT_ID: GOOGLE_CLIENT_ID } = process.env;
 
 function Main() {
 

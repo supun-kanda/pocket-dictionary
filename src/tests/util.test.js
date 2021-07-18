@@ -1,4 +1,5 @@
 import { expect } from 'chai';
+import { INVALID_INPUTS, ROW_MODS } from '../util/const';
 
 // test data
 import {
@@ -11,6 +12,7 @@ import {
     formatText,
     isValidEntry,
     filterData,
+    resetValidity,
 } from '../util/util';
 
 describe('formatText tests', () => {
@@ -38,30 +40,34 @@ describe('formatText tests', () => {
 });
 
 describe('isValidEntry tests', () => {
+    const resp = { isValid: true, code: [] };
+    const errResp = { isValid: false, code: [INVALID_INPUTS.WORD] };
     it('null/empty word/meaning checks', function () {
-        expect(isValidEntry(null, null, tableData)).to.be.false;
-        expect(isValidEntry('', '')).to.be.false;
-        expect(isValidEntry('', '', [...tableData, { word: '' }])).to.be.false;
-        expect(isValidEntry()).to.be.false;
+        expect(isValidEntry(null, null)).to.be.eql(errResp);
+        expect(isValidEntry('hasValue', null, null)).to.be.eql({ ...errResp, code: [INVALID_INPUTS.MEANING, INVALID_INPUTS.SYNONYM] });
     });
 
-    it('valid NEW inputs', function () {
-        expect(isValidEntry('word', 'meaning')).to.be.true;
-        expect(isValidEntry('word', 'meaning')).to.be.true;
-        expect(isValidEntry('not existing', 'meaning', tableData)).to.be.true;
+    it('word already exists error', function () {
+        expect(isValidEntry('alreadyValue', 'hasMeaning', null, [{ word: 'alreadyValue' }])).to.be.eql(errResp);
     });
-
-    it('invalid existing inputs', function () {
-        expect(isValidEntry('word1', 'meaning', tableData)).to.be.false;
+    it('valid inputs', function () {
+        expect(isValidEntry('word', 'meaning', null, tableData)).to.be.eql(resp);
+        expect(isValidEntry('word', null, [123], tableData)).to.be.eql(resp);
+        expect(isValidEntry('word', 'meaning', [123], tableData)).to.be.eql(resp);
     });
 
     it('invalid existing different case inputs', function () {
-        expect(isValidEntry('Word1', 'meaning', tableData)).to.be.false;
+        expect(isValidEntry('Word1', 'meaning', [], tableData)).to.be.eql(errResp);
     });
 
     it('valid input with invalid tableData', function () {
-        expect(isValidEntry('Word1', 'meaning', invalidTableData)).to.be.true;
-        expect(isValidEntry('Word1', 'meaning', [...invalidTableData, { word: 'word1' }])).to.be.false;
+        expect(isValidEntry('Word1', 'meaning', [], invalidTableData)).to.be.eql(resp);
+        expect(isValidEntry('Word1', 'meaning', [], [...invalidTableData, { word: 'word1' }])).to.be.eql(errResp);
+    });
+
+
+    it('valid input with update mode', function () {
+        expect(isValidEntry('Word1', 'meaning', [], tableData, ROW_MODS.UPDATE)).to.be.eql(resp);
     });
 });
 
@@ -92,5 +98,34 @@ describe('filterData tests', () => {
         expect(filterData('aa', ['test1', 'test2'])).to.be.eql({ filteredData: [], exactId: null });
         expect(filterData('aa', [{ word: null }])).to.be.eql({ filteredData: [], exactId: null });
     });
+});
 
+describe('filterData tests', () => {
+    const sample = [INVALID_INPUTS.WORD, INVALID_INPUTS.MEANING, INVALID_INPUTS.SYNONYM];
+
+    it('errCode removal check', function () {
+        expect(resetValidity(INVALID_INPUTS.WORD, sample)).to.be.eql({
+            isValid: false,
+            errCodes: [INVALID_INPUTS.MEANING, INVALID_INPUTS.SYNONYM]
+        });
+    });
+
+    it('errCode empty being valid check', function () {
+        expect(resetValidity(INVALID_INPUTS.SYNONYM, [INVALID_INPUTS.SYNONYM])).to.be.eql({
+            isValid: true,
+            errCodes: []
+        });
+    });
+
+
+    it('optional group removal check', function () {
+        expect(resetValidity(INVALID_INPUTS.SYNONYM, sample)).to.be.eql({
+            isValid: false,
+            errCodes: [INVALID_INPUTS.WORD],
+        });
+        expect(resetValidity(INVALID_INPUTS.MEANING, sample)).to.be.eql({
+            isValid: false,
+            errCodes: [INVALID_INPUTS.WORD],
+        });
+    });
 });

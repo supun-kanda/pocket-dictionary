@@ -3,10 +3,20 @@ import {
     getAuthTokenFormat,
 } from '../util/util';
 
-export const updateTableData = ({ word, meaning }, tokenId) => {
+export const insertNewWord = ({ word, meaning, synonyms }, tokenId) => {
     return fetch(`/api/db-connections/addWord`, {
         method: 'POST',
-        body: JSON.stringify({ word, meaning }),
+        body: JSON.stringify({ word, meaning, synonyms }),
+        ...getAuthTokenFormat(tokenId),
+    })
+        .then(responseAnalyzer)
+        .then(response => response.json());
+}
+
+export const updateWord = ({ word, meaning, id, synonyms }, tokenId) => {
+    return fetch(`/api/db-connections/updateWord`, {
+        method: 'PUT',
+        body: JSON.stringify({ word, meaning, id, synonyms, }),
         ...getAuthTokenFormat(tokenId),
     })
         .then(responseAnalyzer)

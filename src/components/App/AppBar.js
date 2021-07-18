@@ -23,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
     top: 0,
     marginBottom: 10,
     width: '75%',
-    backgroundImage: 'linear-gradient(to right, #ffffff , #006080)',
+    backgroundImage: 'linear-gradient(to right, #ffffff , #3e50b0)', //rgba(62,80,176,255)
     borderRadius: '10px',
     minHeight: '50px',
   },
@@ -48,7 +48,9 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'flex-start',
     flexDirection: 'row',
     padding: 10,
-
+  },
+  error: {
+    backgroundColor: 'red',
   },
   button: {
     position: 'relative',
@@ -56,11 +58,13 @@ const useStyles = makeStyles((theme) => ({
     width: '10%',
     display: 'flex',
     background: 'linear-gradient(45deg, #35F321 30%, #75ED89 60%)',
-    // borderStyle: 'none',
     border: 'none',
     overflow: 'hidden',
     cursor: 'pointer',
-
+    '&:disabled': {
+      background: '#cccccc',
+      cursor: 'default',
+    },
   },
   refresh: {
     backgroundColor: 'transparent',
@@ -89,14 +93,10 @@ export default function Bar({
   logOut,
   isOpen,
   setOpen,
-  onAdd,
-  isValid,
-  setWord,
-  setMeaning,
-  word,
-  meaning,
-  setValidity,
   onSearchChange,
+  isAddDisabled,
+  onAdd,
+  keyword,
 }) {
   const classes = useStyles();
 
@@ -114,11 +114,16 @@ export default function Bar({
                 placeholder="Search or Add"
                 inputProps={{ 'aria-label': 'search' }}
                 onChange={onSearchChange}
+                style={{ width: '100%' }}
+                classes={{ error: classes.error }}
+                type='search'
+                value={keyword || ''}
               />
             </div>
             <button
               className={classes.button}
               onClick={onAdd}
+              disabled={isAddDisabled}
             >
               <AddIcon style={{
                 margin: 'auto',
@@ -165,12 +170,8 @@ AppBar.propTypes = {
   logOut: PropTypes.func,
   isOpen: PropTypes.bool,
   setOpen: PropTypes.func,
-  isValid: PropTypes.bool,
-  word: PropTypes.string,
-  meaning: PropTypes.string,
-  onAdd: PropTypes.func,
-  setWord: PropTypes.func,
-  setMeaning: PropTypes.func,
-  setValidity: PropTypes.func,
   onSearchChange: PropTypes.func,
+  isAddDisabled: PropTypes.bool,
+  onAdd: PropTypes.bool,
+  keyword: PropTypes.string,
 };
