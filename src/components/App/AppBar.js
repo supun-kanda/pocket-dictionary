@@ -100,6 +100,16 @@ export default function Bar({
 }) {
   const classes = useStyles();
 
+  /**
+   * handle on enter key press
+   * @param {Event} e event
+   */
+  const onKeyPress = e => {
+    if (e.charCode === 13 && !isAddDisabled) {
+      onAdd();
+    }
+  }
+
   return (
     <div>
       <AppBar position="static" className={classes.root}>
@@ -118,6 +128,7 @@ export default function Bar({
                 classes={{ error: classes.error }}
                 type='search'
                 value={keyword || ''}
+                onKeyPress={onKeyPress}
               />
             </div>
             <button
