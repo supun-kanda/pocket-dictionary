@@ -73,6 +73,9 @@ export default function Table({
       }
     }
 
+    // scroll to event index
+    setScrollTo(index);
+
     DynamicRows.recomputeRowHeights();
     DynamicRows.forceUpdate();
   };
@@ -92,6 +95,9 @@ export default function Table({
     DynamicRows.forceUpdate();
   }, [keyword, editor, setExpandedKey]);
 
+  /**
+   * Update row heights on data changes
+   */
   useEffect(() => {
     DynamicRows.recomputeRowHeights();
     DynamicRows.forceUpdate();
