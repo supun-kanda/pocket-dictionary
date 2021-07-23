@@ -7,6 +7,7 @@ import MoreVertIcon from '@material-ui/icons/MoreVert';
 import { withStyles } from '@material-ui/core/styles';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import PropTypes from 'prop-types';
 
@@ -47,15 +48,17 @@ export default function Profile({
 
     return (
         <div>
-            <IconButton
-                aria-label="more"
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                style={{ stroke: 'white', color: 'white', strokeWidth: 2 }}
-                onClick={handleClick}
-            >
-                <MoreVertIcon />
-            </IconButton>
+            <Tooltip title='Personal'>
+                <IconButton
+                    aria-label="more"
+                    aria-controls="long-menu"
+                    aria-haspopup="true"
+                    style={{ stroke: 'white', color: 'white', strokeWidth: 2 }}
+                    onClick={handleClick}
+                >
+                    <MoreVertIcon />
+                </IconButton>
+            </Tooltip>
             <StyledMenu
                 id="customized-menu"
                 anchorEl={anchorEl}

@@ -6,6 +6,7 @@ import Avatar from '@material-ui/core/Avatar';
 import TextField from '@material-ui/core/TextField';
 import Autocomplete from '@material-ui/lab/Autocomplete';
 import { makeStyles } from '@material-ui/core/styles';
+import Tooltip from '@material-ui/core/Tooltip';
 
 import VisibilityIcon from '@material-ui/icons/Visibility';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
@@ -13,6 +14,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForeverRounded';
 import CancelIcon from '@material-ui/icons/Cancel';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
@@ -118,8 +120,6 @@ export function EditableRow({
     word,
     meaning,
     synonyms,
-    editMode,
-    resetViews,
     style,
     isExpanded,
     handleExpandClick,
@@ -135,7 +135,6 @@ export function EditableRow({
     onSubmit,
 }) {
     const classes = useStyles();
-    const isWrite = editMode === ROW_MODS.WRITE;
 
     const renderButtons = () => {
         return (
@@ -144,28 +143,34 @@ export function EditableRow({
                     verticalAlign: 'middle',
                     display: 'inline-block',
                 }}>
-                    <IconButton
-                        style={{ display: 'inline-block', }}
-                        color='primary'
-                        disabled={isWrite}
-                    >
-                        <VisibilityIcon />
-                    </IconButton>
+                    <Tooltip title='Reset view count'>
+                        <IconButton
+                            style={{ display: 'inline-block', }}
+                            color='primary'
+                            disabled
+                        >
+                            <ArrowUpwardIcon />
+                        </IconButton>
+                    </Tooltip>
                 </div>
-                <IconButton
-                    style={{ display: 'inline-block', color: isValid ? '#35F321' : 'grey' }}
-                    disabled={!isValid}
-                    onClick={onSubmit}
-                >
-                    <CheckCircleIcon />
-                </IconButton>
-                <IconButton
-                    color='secondary'
-                    style={{ display: 'inline-block', }}
-                    onClick={setAbort}
-                >
-                    <CancelIcon />
-                </IconButton>
+                <Tooltip title='Save'>
+                    <IconButton
+                        style={{ display: 'inline-block', color: isValid ? '#35F321' : 'grey' }}
+                        disabled={!isValid}
+                        onClick={onSubmit}
+                    >
+                        <CheckCircleIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title='Cancel'>
+                    <IconButton
+                        color='secondary'
+                        style={{ display: 'inline-block', }}
+                        onClick={setAbort}
+                    >
+                        <CancelIcon />
+                    </IconButton>
+                </Tooltip>
             </div >);
     }
     const synonymWords = synonyms.map(s => map[s]);
@@ -202,16 +207,18 @@ export function EditableRow({
                 }} />
                 {renderButtons()}
                 <div style={{ display: 'inline-block' }}>
-                    <IconButton
-                        className={clsx(classes.expand, {
-                            [classes.expandOpen]: isExpanded,
-                        })}
-                        aria-expanded={isExpanded}
-                        aria-label="show more"
-                        onClick={() => { if (isExpanded) { handleExpandClick(index) } }}
-                    >
-                        <ExpandMoreIcon />
-                    </IconButton>
+                    <Tooltip title={isExpanded ? 'Collapse' : 'View word'}>
+                        <IconButton
+                            className={clsx(classes.expand, {
+                                [classes.expandOpen]: isExpanded,
+                            })}
+                            aria-expanded={isExpanded}
+                            aria-label="show more"
+                            onClick={() => { if (isExpanded) { handleExpandClick(index) } }}
+                        >
+                            <ExpandMoreIcon />
+                        </IconButton>
+                    </Tooltip>
                 </div>
                 <div className={classes.synonymsEdit}>
                     <Autocomplete
@@ -286,44 +293,48 @@ export default function Row({
     const renderButtons = () => {
         return isExpanded ?
             (<div className={classes.views}>
-                <div style={{
-                    verticalAlign: 'middle',
-                    display: 'inline-block',
-                }}>
+                <Tooltip title='Reset view count'>
                     <IconButton
                         style={{ display: 'inline-block', }}
                         color='primary'
                         onClick={() => onViewReset(dataPoint.key)}
+                        disabled={dataPoint.views <= 1}
                     >
-                        <VisibilityIcon />
+                        <ArrowUpwardIcon />
                     </IconButton>
-                </div>
-                <IconButton
-                    color='primary'
-                    style={{ display: 'inline-block', }}
-                    onClick={() => onEdit(dataPoint.key)}
-                >
-                    <EditIcon />
-                </IconButton>
-                <IconButton
-                    color='secondary'
-                    style={{ display: 'inline-block', }}
-                    onClick={() => onDeleteWord(dataPoint.key)}
-                >
-                    <DeleteForeverIcon />
-                </IconButton>
+                </Tooltip>
+                <Tooltip title='Edit'>
+                    <IconButton
+                        color='primary'
+                        style={{ display: 'inline-block', }}
+                        onClick={() => onEdit(dataPoint.key)}
+                    >
+                        <EditIcon />
+                    </IconButton>
+                </Tooltip>
+                <Tooltip title='Delete'>
+                    <IconButton
+                        color='secondary'
+                        style={{ display: 'inline-block', }}
+                        onClick={() => onDeleteWord(dataPoint.key)}
+                    >
+                        <DeleteForeverIcon />
+                    </IconButton>
+                </Tooltip>
             </div >) :
             (<div className={classes.views}>
-                <div style={{
-                    verticalAlign: 'middle',
-                    opacity: '0.2',
-                    display: 'inline-block',
-                }}>
-                    {dataPoint.views}
-                    <IconButton className={classes.viewEye}>
-                        <VisibilityIcon />
-                    </IconButton>
-                </div>
+                <Tooltip title='Total views'>
+                    <div style={{
+                        verticalAlign: 'middle',
+                        opacity: '0.2',
+                        display: 'inline-block',
+                    }}>
+                        {dataPoint.views}
+                        <IconButton className={classes.viewEye}>
+                            <VisibilityIcon />
+                        </IconButton>
+                    </div>
+                </Tooltip>
             </div >);
     }
 
@@ -338,16 +349,18 @@ export default function Row({
                 })}>{dataPoint.meaning}</div>
                 {renderButtons()}
                 <div style={{ display: 'inline-block' }}>
-                    <IconButton
-                        className={clsx(classes.expand, {
-                            [classes.expandOpen]: isExpanded,
-                        })}
-                        aria-expanded={isExpanded}
-                        aria-label="show more"
-                        onClick={() => { if (isExpanded) { handleExpandClick(index) } }}
-                    >
-                        <ExpandMoreIcon />
-                    </IconButton>
+                    <Tooltip title={isExpanded ? 'Collapse' : 'View word'}>
+                        <IconButton
+                            className={clsx(classes.expand, {
+                                [classes.expandOpen]: isExpanded,
+                            })}
+                            aria-expanded={isExpanded}
+                            aria-label="show more"
+                            onClick={() => { if (isExpanded) { handleExpandClick(index) } }}
+                        >
+                            <ExpandMoreIcon />
+                        </IconButton>
+                    </Tooltip>
                 </div>
                 {isExpanded ? renderSynonyms() : null}
             </div>

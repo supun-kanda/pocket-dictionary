@@ -1,12 +1,13 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Profile from './Profile';
-import words from '../../util/words.png';
+import words from '../../../util/words.png';
 
 import {
   InputBase,
   Toolbar,
   AppBar,
+  Tooltip,
 } from '@material-ui/core';
 
 import {
@@ -71,10 +72,6 @@ const useStyles = makeStyles((theme) => ({
     border: 'none',
     boxShadow: 'none',
     cursor: 'pointer',
-    '&:hover': {
-      // backgroundColor: alpha(theme.palette.common.white, 0.25),
-    },
-    // borderStyle: 'none',
   },
   searchIcon: {
     paddingRight: '2%',
@@ -136,12 +133,14 @@ export default function Bar({
               onClick={onAdd}
               disabled={isAddDisabled}
             >
-              <AddIcon style={{
-                margin: 'auto',
-                height: '40px',
-                width: '40px',
-                color: 'white',
-              }} />
+              <Tooltip title='Add searched term'>
+                <AddIcon style={{
+                  margin: 'auto',
+                  height: '40px',
+                  width: '40px',
+                  color: 'white',
+                }} />
+              </Tooltip>
             </button>
           </div>
 
@@ -151,17 +150,18 @@ export default function Bar({
               onClick={onReset}
               disabled={!isResetEnabled}
             >
-              <RefreshRoundedIcon
-                aria-label="RefreshRounded"
-                aria-controls="long-menu"
-                aria-haspopup="true"
-                style={{
-                  color: 'white',
-                  visibility: isResetEnabled ? 'visible' : 'hidden',
-                }}
-              />
+              <Tooltip title='Refresh words'>
+                <RefreshRoundedIcon
+                  aria-label="RefreshRounded"
+                  aria-controls="long-menu"
+                  aria-haspopup="true"
+                  style={{
+                    color: 'white',
+                    visibility: isResetEnabled ? 'visible' : 'hidden',
+                  }}
+                />
+              </Tooltip>
             </button>
-
             <Profile
               userData={userData}
               logOut={logOut}
