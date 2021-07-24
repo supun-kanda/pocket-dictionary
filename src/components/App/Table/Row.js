@@ -19,7 +19,6 @@ import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
 import clsx from 'clsx';
 import PropTypes from 'prop-types';
 import {
-    ROW_MODS,
     INVALID_INPUTS,
 } from '../../../util/const';
 
