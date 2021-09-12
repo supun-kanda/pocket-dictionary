@@ -1,22 +1,22 @@
 {
   "files": {
     "main.css": "/pocket-dictionary/static/css/main.c2e0a0a9.chunk.css",
-    "main.js": "/pocket-dictionary/static/js/main.a80b0c52.chunk.js",
-    "main.js.map": "/pocket-dictionary/static/js/main.a80b0c52.chunk.js.map",
+    "main.js": "/pocket-dictionary/static/js/main.41c3c2cc.chunk.js",
+    "main.js.map": "/pocket-dictionary/static/js/main.41c3c2cc.chunk.js.map",
     "runtime-main.js": "/pocket-dictionary/static/js/runtime-main.2e22fe8b.js",
     "runtime-main.js.map": "/pocket-dictionary/static/js/runtime-main.2e22fe8b.js.map",
-    "static/js/2.5b2460a5.chunk.js": "/pocket-dictionary/static/js/2.5b2460a5.chunk.js",
-    "static/js/2.5b2460a5.chunk.js.map": "/pocket-dictionary/static/js/2.5b2460a5.chunk.js.map",
+    "static/js/2.6cbb4cfa.chunk.js": "/pocket-dictionary/static/js/2.6cbb4cfa.chunk.js",
+    "static/js/2.6cbb4cfa.chunk.js.map": "/pocket-dictionary/static/js/2.6cbb4cfa.chunk.js.map",
     "static/js/3.10ccd89c.chunk.js": "/pocket-dictionary/static/js/3.10ccd89c.chunk.js",
     "static/js/3.10ccd89c.chunk.js.map": "/pocket-dictionary/static/js/3.10ccd89c.chunk.js.map",
     "index.html": "/pocket-dictionary/index.html",
     "static/css/main.c2e0a0a9.chunk.css.map": "/pocket-dictionary/static/css/main.c2e0a0a9.chunk.css.map",
-    "static/js/2.5b2460a5.chunk.js.LICENSE.txt": "/pocket-dictionary/static/js/2.5b2460a5.chunk.js.LICENSE.txt"
+    "static/js/2.6cbb4cfa.chunk.js.LICENSE.txt": "/pocket-dictionary/static/js/2.6cbb4cfa.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.2e22fe8b.js",
-    "static/js/2.5b2460a5.chunk.js",
+    "static/js/2.6cbb4cfa.chunk.js",
     "static/css/main.c2e0a0a9.chunk.css",
-    "static/js/main.a80b0c52.chunk.js"
+    "static/js/main.41c3c2cc.chunk.js"
   ]
 }
