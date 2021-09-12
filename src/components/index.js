@@ -8,7 +8,7 @@ import InfoModal from './InfoModal';
 import { GoogleLogin } from 'react-google-login';
 import Loader from './Loader';
 import {
-  HashRouter as Router,
+  BrowserRouter as Router,
   Switch,
   Route,
 } from 'react-router-dom';
@@ -57,7 +57,7 @@ function Main() {
         buttonText="Log in with Google"
         cookiePolicy={'single_host_origin'}
         uxMode="redirect"
-        redirectUri={`${APP_URL}/#/login`}
+        redirectUri={`${APP_URL}/login`}
       />
     </div>
   )
@@ -66,7 +66,7 @@ function Main() {
     <div className="App">
 
       <Router
-        basename={APP_URL}
+        basename="/pocket-dictionary"
       >
         <Switch>
           <Route path='/login'>
