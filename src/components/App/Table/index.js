@@ -57,7 +57,7 @@ export default function Table({
   const [scrollTo, setScrollTo] = useState(-1);
 
   const getRowHeight = (props) => {
-    return data[props.index].key === expandedKey ? 110 : 50;
+    return data[props.index].key === expandedKey ? 160 : 50;
   }
 
   const handleExpandClick = index => {

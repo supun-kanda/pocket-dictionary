@@ -21,7 +21,7 @@ import PropTypes from 'prop-types';
 import {
     INVALID_INPUTS,
 } from '../../../util/const';
-
+const MAX_MEAN_LEN = 70;
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -63,12 +63,15 @@ const useStyles = makeStyles(theme => ({
         display: 'inline-block',
         position: 'relative',
         width: '50%',
+        whiteSpace: 'pre-wrap',
+        padding: '10px',
     },
     editMeaning: {
         display: 'inline-block',
         position: 'relative',
         width: '40%',
         top: '-4px',
+        maxHeight: '100px'
     },
     views: {
         display: 'inline-block',
@@ -199,6 +202,8 @@ export function EditableRow({
                     size='small'
                     error={errCodes.includes(INVALID_INPUTS.MEANING)}
                     type='search'
+                    multiline
+                    row={2}
                 />
                 <div style={{
                     width: '9%',
@@ -337,15 +342,29 @@ export default function Row({
             </div >);
     }
 
+    const renderMeaning = () => {
+        const meaning = dataPoint.meaning;
+        const formattedMeaning = !isExpanded && meaning && meaning.length > MAX_MEAN_LEN ?
+            `${meaning.slice(0, MAX_MEAN_LEN)}...` :
+            meaning;
+
+        return (
+            <div
+                className={clsx(classes.meaning, {
+                    [classes.blurry]: !shouldAppear,
+                })}>
+                {formattedMeaning}
+            </div>
+        )
+    }
+
     return (
         <div key={rowKey} style={style} className={classes.row} onClick={() => { if (!isExpanded) { handleExpandClick(index) } }}>
             <div>
                 <div className={classes.word}>
                     <h3>{dataPoint.word}</h3>
                 </div>
-                <div className={clsx(classes.meaning, {
-                    [classes.blurry]: !shouldAppear,
-                })}>{dataPoint.meaning}</div>
+                {renderMeaning()}
                 {renderButtons()}
                 <div style={{ display: 'inline-block' }}>
                     <Tooltip title={isExpanded ? 'Collapse' : 'View word'}>
