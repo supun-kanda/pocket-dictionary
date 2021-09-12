@@ -8,7 +8,7 @@ import InfoModal from './InfoModal';
 import { GoogleLogin } from 'react-google-login';
 import Loader from './Loader';
 import {
-  BrowserRouter as Router,
+  HashRouter as Router,
   Switch,
   Route,
 } from 'react-router-dom';
@@ -21,7 +21,7 @@ import { StatusCodes } from 'http-status-codes';
 
 const {
   REACT_APP_CLIENT_ID: GOOGLE_CLIENT_ID,
-  REACT_APP_CALLBACK_URL: CALLBACK_URL,
+  REACT_APP_URL: APP_URL,
 } = process.env;
 
 function Main() {
@@ -57,7 +57,7 @@ function Main() {
         buttonText="Log in with Google"
         cookiePolicy={'single_host_origin'}
         uxMode="redirect"
-        redirectUri={CALLBACK_URL}
+        redirectUri={`${APP_URL}/#/login`}
       />
     </div>
   )
@@ -65,7 +65,9 @@ function Main() {
   return (
     <div className="App">
 
-      <Router>
+      <Router
+        basename={APP_URL}
+      >
         <Switch>
           <Route path='/login'>
             <Login
